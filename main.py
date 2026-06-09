@@ -62,13 +62,13 @@ workspace_navigation = {
         ),
 
         st.Page(
-            "pages/6_Z-test.py",
-            title="Z-Test"
+            "pages/6_Anova.py",
+            title="ANOVA"
         ),
 
         st.Page(
-            "pages/7_Anova.py",
-            title="ANOVA"
+            "pages/7_Z-test.py",
+            title="Z-Test"
         ),
 
         st.Page(
@@ -273,10 +273,6 @@ if page_title == "Dashboard":
             dataset_quality
         )
 
-        # --------------------------------------------------
-        # Preview
-        # --------------------------------------------------
-
         st.markdown(
             "### Dataset Preview (First 10 Rows)"
         )
@@ -285,10 +281,6 @@ if page_title == "Dashboard":
             df.head(10),
             use_container_width=True
         )
-
-        # --------------------------------------------------
-        # Variable Information
-        # --------------------------------------------------
 
         st.subheader(
             "Variable Information"
@@ -312,16 +304,8 @@ if page_title == "Dashboard":
         st.success(
             """
             Dataset loaded successfully.
-            Use the sidebar to access statistical modules.
+            Use the sidebar to access the statistical modules.
             """
         )
 
-    else:
-
-        st.info(
-            "Upload a CSV or Excel file to begin analysis."
-        )
-
-else:
-
-    pg.run()
+pg.run()
