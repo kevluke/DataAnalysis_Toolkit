@@ -44,12 +44,12 @@ workspace_navigation = {
         ),
 
         st.Page(
-            "pages/4_Normality-Test.py",
+            "pages/3_Normality-Test.py",
             title="Normality Testing"
         ),
 
         st.Page(
-            "pages/5_Central_Limit_Theorem.py",
+            "pages/4_Central_Limit_Theorem.py",
             title="Central Limit Theorem"
         )
     ],
@@ -57,12 +57,12 @@ workspace_navigation = {
     "HYPOTHESIS TESTING": [
 
         st.Page(
-            "pages/6_T-test.py",
+            "pages/5_T-test.py",
             title="T-Test"
         ),
 
         st.Page(
-            "pages/8_Z-test.py",
+            "pages/6_Z-test.py",
             title="Z-Test"
         ),
 
@@ -72,12 +72,12 @@ workspace_navigation = {
         ),
 
         st.Page(
-            "pages/9_Chi square -test.py",
+            "pages/8_Chi square -test.py",
             title="Chi-Square"
         ),
 
         st.Page(
-            "pages/10_Nonparametric.py",
+            "pages/9_Nonparametric.py",
             title="Nonparametric Tests"
         )
     ]
