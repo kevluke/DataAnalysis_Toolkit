@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -16,6 +17,10 @@ Explore how the sampling distribution of sample means becomes
 approximately normal as sample size increases, regardless of the
 underlying population distribution.
 """)
+
+# ==================================================
+# SETTINGS
+# ==================================================
 
 st.subheader("Simulation Settings")
 
@@ -52,7 +57,7 @@ with col3:
     )
 
 # ==================================================
-# POPULATION GENERATION
+# POPULATION
 # ==================================================
 
 np.random.seed(42)
@@ -115,19 +120,19 @@ sample_means = np.array(
 )
 
 # ==================================================
-# SUMMARY METRICS
+# SUMMARY
 # ==================================================
 
 population_mean = np.mean(
     population_data
 )
 
-sample_mean_mean = np.mean(
-    sample_means
-)
-
 population_std = np.std(
     population_data
+)
+
+mean_sample_means = np.mean(
+    sample_means
 )
 
 sampling_std = np.std(
@@ -140,34 +145,44 @@ theoretical_se = (
     np.sqrt(sample_size)
 )
 
+mean_difference = abs(
+    population_mean
+    -
+    mean_sample_means
+)
+
+summary_df = pd.DataFrame({
+    "Metric": [
+        "Population Mean",
+        "Population Standard Deviation",
+        "Sample Size",
+        "Mean of Sample Means",
+        "Standard Deviation of Sample Means",
+        "Theoretical Standard Error",
+        "Difference Between Means"
+    ],
+    "Value": [
+        round(population_mean, 4),
+        round(population_std, 4),
+        sample_size,
+        round(mean_sample_means, 4),
+        round(sampling_std, 4),
+        round(theoretical_se, 4),
+        round(mean_difference, 4)
+    ]
+})
+
 st.subheader(
     "Summary Statistics"
 )
 
-m1, m2, m3, m4 = st.columns(4)
-
-m1.metric(
-    "Population Mean",
-    f"{population_mean:.4f}"
-)
-
-m2.metric(
-    "Mean of Sample Means",
-    f"{sample_mean_mean:.4f}"
-)
-
-m3.metric(
-    "Sampling Std Dev",
-    f"{sampling_std:.4f}"
-)
-
-m4.metric(
-    "Theoretical SE",
-    f"{theoretical_se:.4f}"
+st.dataframe(
+    summary_df,
+    use_container_width=True
 )
 
 # ==================================================
-# NORMALITY TEST
+# SHAPIRO TEST
 # ==================================================
 
 shapiro_stat, shapiro_p = stats.shapiro(
@@ -204,15 +219,15 @@ tab1, tab2, tab3 = st.tabs(
 
 with tab1:
 
-    fig, ax = plt.subplots(
-        figsize=(9,4)
+    fig1, ax1 = plt.subplots(
+        figsize=(9, 4)
     )
 
     sns.histplot(
         sample_means,
         kde=True,
         stat="density",
-        ax=ax
+        ax=ax1
     )
 
     x = np.linspace(
@@ -227,25 +242,25 @@ with tab1:
         np.std(sample_means)
     )
 
-    ax.plot(
+    ax1.plot(
         x,
         y,
         linestyle="--",
         linewidth=2
     )
 
-    ax.set_title(
-        "Distribution of Sample Means"
+    ax1.set_title(
+        "Sampling Distribution of Sample Means"
     )
 
-    st.pyplot(fig)
+    st.pyplot(fig1)
 
-    plt.close(fig)
+    plt.close(fig1)
 
 with tab2:
 
     fig2, ax2 = plt.subplots(
-        figsize=(6,4)
+        figsize=(6, 4)
     )
 
     sm.qqplot(
@@ -265,7 +280,7 @@ with tab2:
 with tab3:
 
     fig3, ax3 = plt.subplots(
-        figsize=(9,4)
+        figsize=(9, 4)
     )
 
     sns.histplot(
@@ -284,55 +299,83 @@ with tab3:
     plt.close(fig3)
 
 # ==================================================
-# INTERPRETATION
+# DECISION
 # ==================================================
 
 st.subheader(
-    "Interpretation"
+    "Decision"
 )
 
 with st.container(border=True):
 
-    st.write(
-        f"• Population Mean = {population_mean:.4f}"
-    )
-
-    st.write(
-        f"• Mean of Sample Means = {sample_mean_mean:.4f}"
-    )
-
-    st.write(
-        "• As predicted by the Central Limit Theorem, the mean of the sampling distribution approaches the population mean."
-    )
-
-    st.write(
-        f"• Theoretical Standard Error = {theoretical_se:.4f}"
-    )
-
-    st.write(
-        f"• Observed Sampling Standard Deviation = {sampling_std:.4f}"
-    )
-
     if shapiro_p >= 0.05:
 
         st.success(
-            "The sampling distribution is approximately normal."
+            "Fail to Reject H₀"
         )
 
     else:
 
         st.warning(
-            "The sampling distribution shows some deviation from normality."
+            "Reject H₀"
         )
 
-    if sample_size >= 30:
+# ==================================================
+# CONCLUSION
+# ==================================================
+
+st.subheader(
+    "Conclusion"
+)
+
+with st.container(border=True):
+
+    if shapiro_p >= 0.05:
 
         st.success(
-            "Sample size is large enough for the Central Limit Theorem to typically apply."
+            """
+            The sampling distribution is approximately
+            normal. The Central Limit Theorem is
+            demonstrated successfully under the
+            selected conditions.
+            """
         )
 
     else:
 
-        st.info(
-            "Smaller sample sizes may require a more normally distributed population."
+        st.warning(
+            """
+            The sampling distribution shows evidence
+            of non-normality. Increasing the sample
+            size may improve the approximation to
+            normality.
+            """
         )
+
+# ==================================================
+# NOTES
+# ==================================================
+
+st.subheader(
+    "Notes"
+)
+
+with st.container(border=True):
+
+    st.write(
+        """
+        • The Central Limit Theorem states that the sampling
+        distribution of sample means approaches a normal
+        distribution as sample size increases.
+
+        • The mean of the sampling distribution should be
+        approximately equal to the population mean.
+
+        • The standard deviation of the sampling distribution
+        should be close to the theoretical standard error.
+
+        • Even highly skewed or bimodal populations can
+        produce approximately normal sampling distributions
+        when the sample size becomes sufficiently large.
+        """
+    )

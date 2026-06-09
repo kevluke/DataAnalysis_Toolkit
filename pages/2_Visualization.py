@@ -11,13 +11,15 @@ apply_premium_theme()
 st.title("Visualizations")
 
 st.markdown("""
-Explore distributions using histograms, density curves,
-box plots, and cumulative distribution functions.
+Visualize the distribution, spread, and cumulative behavior
+of numerical variables.
 """)
 
 if "df" not in st.session_state or st.session_state["df"] is None:
 
-    st.error("Please upload a dataset from the Dashboard first.")
+    st.error(
+        "Please upload a dataset from the Dashboard first."
+    )
 
 else:
 
@@ -42,24 +44,56 @@ else:
 
     data = df[selected_col].dropna()
 
-    is_discrete = (
-        len(data.unique()) < 15
-        or np.array_equal(data, data.astype(int))
+    if len(data) == 0:
+
+        st.error(
+            "Selected variable contains no valid observations."
+        )
+
+        st.stop()
+
+    # ==================================================
+    # VARIABLE TYPE DETECTION
+    # ==================================================
+
+    unique_ratio = (
+        data.nunique() /
+        len(data)
     )
 
-    # --------------------------------------------------
+    is_discrete = (
+        unique_ratio < 0.10
+        or np.array_equal(
+            data,
+            data.astype(int)
+        )
+    )
+
+    variable_type = (
+        "Discrete"
+        if is_discrete
+        else "Continuous"
+    )
+
+    st.info(
+        f"Variable Type: {variable_type}"
+    )
+
+    # ==================================================
     # TABS
-    # --------------------------------------------------
+    # ==================================================
 
-    tab1, tab2, tab3 = st.tabs([
-        "Distribution",
-        "Box Plot",
-        "Cumulative Distribution"
-    ])
+    tab1, tab2, tab3 = st.tabs(
+        [
+            "Distribution",
+            "Box Plot",
+            "Cumulative Distribution"
+        ]
+    )
 
-    # --------------------------------------------------
+    # ==================================================
     # DISTRIBUTION
-    # --------------------------------------------------
+    # ==================================================
 
     with tab1:
 
@@ -69,7 +103,7 @@ else:
 
         if is_discrete:
 
-            counts = (
+            pmf = (
                 data.value_counts(
                     normalize=True
                 )
@@ -77,9 +111,8 @@ else:
             )
 
             ax.bar(
-                counts.index,
-                counts.values,
-                alpha=0.8
+                pmf.index,
+                pmf.values
             )
 
             ax.set_title(
@@ -100,7 +133,7 @@ else:
             )
 
             ax.set_title(
-                f"Distribution of {selected_col}"
+                f"Histogram & Density Curve - {selected_col}"
             )
 
             ax.set_ylabel(
@@ -115,9 +148,9 @@ else:
 
         plt.close(fig)
 
-    # --------------------------------------------------
+    # ==================================================
     # BOX PLOT
-    # --------------------------------------------------
+    # ==================================================
 
     with tab2:
 
@@ -179,21 +212,21 @@ else:
             len(outliers)
         )
 
-        if len(outliers) > 0:
+        if len(outliers) == 0:
 
-            st.warning(
-                f"{len(outliers)} potential outlier(s) detected using the IQR method."
+            st.success(
+                "No potential outliers detected."
             )
 
         else:
 
-            st.success(
-                "No outliers detected."
+            st.warning(
+                f"{len(outliers)} potential outlier(s) detected."
             )
 
-    # --------------------------------------------------
+    # ==================================================
     # CDF
-    # --------------------------------------------------
+    # ==================================================
 
     with tab3:
 
@@ -208,7 +241,7 @@ else:
         )
 
         ax.set_title(
-            f"Cumulative Distribution - {selected_col}"
+            f"Cumulative Distribution Function - {selected_col}"
         )
 
         ax.set_xlabel(
@@ -229,38 +262,78 @@ else:
 
         plt.close(fig)
 
-    # --------------------------------------------------
+    # ==================================================
     # INTERPRETATION
-    # --------------------------------------------------
+    # ==================================================
 
-    st.subheader("Interpretation")
+    st.subheader(
+        "Interpretation"
+    )
 
     with st.container(border=True):
 
-        if is_discrete:
+        st.markdown(
+            "### Variable Type"
+        )
+
+        st.write(
+            f"The variable is classified as **{variable_type}**."
+        )
+
+        st.markdown(
+            "### Distribution Shape"
+        )
+
+        skew_val = data.skew()
+
+        if abs(skew_val) < 0.5:
 
             st.write(
-                "• The variable is treated as a discrete variable and displayed using a Probability Mass Function (PMF)."
+                "The distribution is approximately symmetric."
+            )
+
+        elif skew_val > 0:
+
+            st.write(
+                "The distribution is positively skewed."
             )
 
         else:
 
             st.write(
-                "• The variable is treated as a continuous variable and displayed using a histogram with a density curve."
+                "The distribution is negatively skewed."
             )
 
-        st.write(
-            "• The box plot summarizes the median, quartiles, spread, and potential outliers."
+        st.markdown(
+            "### Spread"
         )
 
         st.write(
-            "• The cumulative distribution function (CDF) shows the proportion of observations below any given value."
+            f"""
+            Values range from
+            {data.min():.4f}
+            to
+            {data.max():.4f}
+            with a standard deviation of
+            {data.std():.4f}.
+            """
         )
 
-        st.write(
-            "• Large jumps in the CDF indicate regions where many observations are concentrated."
+        st.markdown(
+            "### Outlier Analysis"
         )
 
-        st.write(
-            "• Outliers should be investigated before performing hypothesis tests."
-        )
+        if len(outliers) == 0:
+
+            st.write(
+                "No potential outliers were detected using the IQR method."
+            )
+
+        else:
+
+            st.write(
+                f"""
+                {len(outliers)}
+                potential outlier(s) were detected using the IQR method.
+                """
+            )

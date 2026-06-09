@@ -9,8 +9,9 @@ apply_premium_theme()
 st.title("Descriptive Statistics")
 
 st.markdown("""
-Explore the key characteristics of a numerical variable, including
-central tendency, variability, distribution shape, and outlier detection.
+Explore the key characteristics of a numerical variable including
+central tendency, variability, distribution shape, data quality,
+and outlier detection.
 """)
 
 if "df" not in st.session_state or st.session_state["df"] is None:
@@ -42,47 +43,48 @@ else:
 
     vec = raw_col.dropna()
 
-    # --------------------------------------------------
-    # Variable Information
-    # --------------------------------------------------
+    # ==================================================
+    # VARIABLE INFORMATION
+    # ==================================================
 
-    sample_size = len(vec)
+    total_rows = len(raw_col)
+
+    valid_values = len(vec)
 
     missing_count = raw_col.isna().sum()
 
     missing_percent = (
-        missing_count / len(raw_col)
+        missing_count /
+        total_rows
     ) * 100
-
-    unique_count = vec.nunique()
 
     st.subheader("Variable Information")
 
     info1, info2, info3, info4 = st.columns(4)
 
     info1.metric(
-        "Sample Size",
-        sample_size
+        "Total Rows",
+        total_rows
     )
 
     info2.metric(
+        "Valid Values",
+        valid_values
+    )
+
+    info3.metric(
         "Missing Values",
         missing_count
     )
 
-    info3.metric(
+    info4.metric(
         "Missing %",
         f"{missing_percent:.2f}%"
     )
 
-    info4.metric(
-        "Unique Values",
-        unique_count
-    )
-
-    # --------------------------------------------------
-    # Descriptive Statistics
-    # --------------------------------------------------
+    # ==================================================
+    # SUMMARY STATISTICS
+    # ==================================================
 
     mean_val = vec.mean()
 
@@ -98,15 +100,30 @@ else:
 
     range_val = max_val - min_val
 
-    q1 = vec.quantile(0.25)
-
-    q3 = vec.quantile(0.75)
-
-    iqr_val = q3 - q1
-
     skew_val = vec.skew()
 
     kurt_val = vec.kurtosis()
+
+    mode_series = vec.mode()
+
+    meaningful_mode = False
+
+    mode_value = None
+
+    if len(mode_series) > 0:
+
+        candidate_mode = mode_series.iloc[0]
+
+        mode_frequency = (
+            vec.value_counts()
+            .iloc[0]
+        )
+
+        if mode_frequency > 1:
+
+            meaningful_mode = True
+
+            mode_value = candidate_mode
 
     st.subheader("Summary Statistics")
 
@@ -122,41 +139,57 @@ else:
         f"{median_val:.4f}"
     )
 
-    c3.metric(
+    if meaningful_mode:
+
+        c3.metric(
+            "Mode",
+            f"{mode_value:.4f}"
+        )
+
+    else:
+
+        c3.metric(
+            "Mode",
+            "N/A"
+        )
+
+    c4.metric(
         "Variance",
         f"{variance_val:.4f}"
     )
 
-    c4.metric(
+    c5, c6, c7 = st.columns(3)
+
+    c5.metric(
         "Std Deviation",
         f"{std_val:.4f}"
     )
 
-    c5, c6, c7, c8 = st.columns(4)
-
-    c5.metric(
+    c6.metric(
         "Minimum",
         f"{min_val:.4f}"
     )
 
-    c6.metric(
+    c7.metric(
         "Maximum",
         f"{max_val:.4f}"
     )
 
-    c7.metric(
+    c8, c9 = st.columns(2)
+
+    c8.metric(
         "Range",
         f"{range_val:.4f}"
     )
 
-    c8.metric(
-        "IQR",
-        f"{iqr_val:.4f}"
+    c9.metric(
+        "Sample Size",
+        valid_values
     )
 
-    # --------------------------------------------------
-    # Distribution Shape
-    # --------------------------------------------------
+    # ==================================================
+    # DISTRIBUTION SHAPE
+    # ==================================================
 
     st.subheader("Distribution Shape")
 
@@ -172,20 +205,96 @@ else:
         f"{kurt_val:.4f}"
     )
 
-    # --------------------------------------------------
-    # Outlier Detection
-    # --------------------------------------------------
+    # ==================================================
+    # VARIABLE CLASSIFICATION
+    # ==================================================
 
-    lower_bound = q1 - 1.5 * iqr_val
+    unique_ratio = (
+        vec.nunique() /
+        len(vec)
+    )
 
-    upper_bound = q3 + 1.5 * iqr_val
+    if unique_ratio > 0.10:
+
+        variable_type = "Continuous"
+
+    else:
+
+        variable_type = "Discrete"
+
+    st.subheader(
+        "Variable Classification"
+    )
+
+    st.info(
+        f"This variable is classified as **{variable_type}**."
+    )
+
+    # ==================================================
+    # DATA QUALITY
+    # ==================================================
+
+    if missing_percent < 5:
+
+        quality = "Good"
+
+    elif missing_percent <= 20:
+
+        quality = "Fair"
+
+    else:
+
+        quality = "Poor"
+
+    st.subheader(
+        "Data Quality Assessment"
+    )
+
+    if quality == "Good":
+
+        st.success(
+            "Good Quality Data"
+        )
+
+    elif quality == "Fair":
+
+        st.warning(
+            "Fair Quality Data"
+        )
+
+    else:
+
+        st.error(
+            "Poor Quality Data"
+        )
+
+    # ==================================================
+    # OUTLIER DETECTION
+    # ==================================================
+
+    q1 = vec.quantile(0.25)
+
+    q3 = vec.quantile(0.75)
+
+    iqr = q3 - q1
+
+    lower_bound = (
+        q1 - 1.5 * iqr
+    )
+
+    upper_bound = (
+        q3 + 1.5 * iqr
+    )
 
     outliers = vec[
-        (vec < lower_bound) |
+        (vec < lower_bound)
+        |
         (vec > upper_bound)
     ]
 
-    st.subheader("Outlier Detection")
+    st.subheader(
+        "Outlier Detection (IQR Method)"
+    )
 
     with st.container(border=True):
 
@@ -210,7 +319,7 @@ else:
         else:
 
             st.warning(
-                f"{len(outliers)} potential outlier(s) detected using the IQR method."
+                f"{len(outliers)} potential outlier(s) detected."
             )
 
             st.dataframe(
@@ -220,50 +329,136 @@ else:
                 use_container_width=True
             )
 
-    # --------------------------------------------------
-    # Interpretation
-    # --------------------------------------------------
+    # ==================================================
+    # INTERPRETATION
+    # ==================================================
 
     st.subheader("Interpretation")
 
     with st.container(border=True):
 
+        st.markdown(
+            "### Central Tendency"
+        )
+
+        st.write(
+            f"""
+            Mean = {mean_val:.4f}
+            and Median = {median_val:.4f}.
+            """
+        )
+
+        if meaningful_mode:
+
+            st.write(
+                f"""
+                The most frequently occurring value is
+                {mode_value:.4f}.
+                """
+            )
+
+        else:
+
+            st.write(
+                """
+                No meaningful mode exists because
+                most observations are unique.
+                """
+            )
+
+        st.markdown(
+            "### Variability"
+        )
+
+        st.write(
+            f"""
+            The variable ranges from
+            {min_val:.4f}
+            to
+            {max_val:.4f}
+            with a standard deviation of
+            {std_val:.4f}.
+            """
+        )
+
+        st.markdown(
+            "### Distribution Shape"
+        )
+
         if abs(skew_val) < 0.5:
 
             st.write(
-                f"• The distribution is approximately symmetric (Skewness = {skew_val:.2f})."
+                "The distribution is approximately symmetric."
             )
 
         elif skew_val > 0:
 
             st.write(
-                f"• The distribution is positively skewed (Skewness = {skew_val:.2f})."
+                "The distribution is positively skewed."
             )
 
         else:
 
             st.write(
-                f"• The distribution is negatively skewed (Skewness = {skew_val:.2f})."
+                "The distribution is negatively skewed."
             )
 
         if kurt_val > 0.5:
 
             st.write(
-                f"• The distribution has heavier tails than normal (Kurtosis = {kurt_val:.2f})."
+                "The distribution has heavier tails than normal."
             )
 
         elif kurt_val < -0.5:
 
             st.write(
-                f"• The distribution has lighter tails than normal (Kurtosis = {kurt_val:.2f})."
+                "The distribution has lighter tails than normal."
             )
 
         else:
 
             st.write(
-                f"• The distribution has a shape close to normal (Kurtosis = {kurt_val:.2f})."
+                "The distribution has a shape close to normal."
             )
 
-        st.write(
-            f"• Values range from {min_val:.4f} to {max_val:.4f} with an average of {mean_val:.4f}."
+        st.markdown(
+            "### Outlier Analysis"
         )
+
+        if len(outliers) == 0:
+
+            st.write(
+                "No potential outliers were detected using the IQR method."
+            )
+
+        else:
+
+            st.write(
+                f"""
+                {len(outliers)}
+                potential outlier(s) were detected
+                using the IQR method.
+                """
+            )
+
+        st.markdown(
+            "### Data Quality Assessment"
+        )
+
+        if quality == "Good":
+
+            st.write(
+                "The variable contains very little missing data and is considered good quality."
+            )
+
+        elif quality == "Fair":
+
+            st.write(
+                "The variable contains a moderate amount of missing data."
+            )
+
+        else:
+
+            st.write(
+                "The variable contains substantial missing data and should be interpreted carefully."
+            )

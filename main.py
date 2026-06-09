@@ -25,10 +25,14 @@ if "df" not in st.session_state:
 workspace_navigation = {
 
     "DATA": [
-        st.Page("main.py", title="Dashboard")
+        st.Page(
+            "main.py",
+            title="Dashboard"
+        )
     ],
 
     "EXPLORATION": [
+
         st.Page(
             "pages/1_Descriptive.py",
             title="Descriptive Statistics"
@@ -85,32 +89,70 @@ pg = st.navigation(workspace_navigation)
 # Dashboard Page
 # --------------------------------------------------
 
-try:
-    page_title = pg.title
-except:
-    page_title = "Dashboard"
+page_title = getattr(
+    pg,
+    "title",
+    "Dashboard"
+)
 
 if page_title == "Dashboard":
 
-    st.markdown("""
-    <h1 style="margin-bottom:0;">
-    StatLab Suite
-    </h1>
+    st.markdown(
+        """
+        <h1 style="margin-bottom:0;">
+        StatLab Suite
+        </h1>
 
-    <p style="font-size:1rem;color:gray;">
-    Statistical Analysis Toolkit
-    </p>
-    """, unsafe_allow_html=True)
+        <p style="font-size:1rem;color:gray;">
+        Statistical Analysis Toolkit
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
+
+    # --------------------------------------------------
+    # Overview
+    # --------------------------------------------------
 
     with st.container(border=True):
 
         st.subheader("Overview")
 
-        st.write("""
-        Upload a CSV or Excel dataset and explore it using
-        descriptive statistics, visualizations, normality tests,
-        hypothesis testing, and nonparametric methods.
-        """)
+        st.write(
+            """
+            Upload a CSV or Excel dataset and explore it using
+            descriptive statistics, visualizations, normality tests,
+            hypothesis testing, and nonparametric methods.
+            """
+        )
+
+    # --------------------------------------------------
+    # Supported Methods
+    # --------------------------------------------------
+
+    with st.container(border=True):
+
+        st.subheader(
+            "Supported Statistical Methods"
+        )
+
+        st.markdown(
+            """
+            - Descriptive Statistics
+            - Visualizations
+            - Normality Testing
+            - Central Limit Theorem
+            - T-Test
+            - Z-Test
+            - ANOVA
+            - Chi-Square
+            - Nonparametric Tests
+            """
+        )
+
+    # --------------------------------------------------
+    # File Upload
+    # --------------------------------------------------
 
     uploaded_file = st.file_uploader(
         "Upload Dataset",
@@ -122,16 +164,28 @@ if page_title == "Dashboard":
         try:
 
             if uploaded_file.name.endswith(".csv"):
-                df = pd.read_csv(uploaded_file)
+
+                df = pd.read_csv(
+                    uploaded_file
+                )
 
             else:
-                df = pd.read_excel(uploaded_file)
+
+                df = pd.read_excel(
+                    uploaded_file
+                )
 
             st.session_state["df"] = df
 
         except Exception as e:
 
-            st.error(f"Error loading file: {e}")
+            st.error(
+                f"Error loading file: {e}"
+            )
+
+    # --------------------------------------------------
+    # Dataset Overview
+    # --------------------------------------------------
 
     if st.session_state["df"] is not None:
 
@@ -139,36 +193,127 @@ if page_title == "Dashboard":
 
         total_rows, total_cols = df.shape
 
-        numeric_cols = df.select_dtypes(
-            include=[np.number]
-        ).columns.tolist()
+        numeric_cols = (
+            df.select_dtypes(
+                include=[np.number]
+            )
+            .columns
+            .tolist()
+        )
 
-        categorical_cols = df.select_dtypes(
-            include=["object", "category", "bool"]
-        ).columns.tolist()
+        categorical_cols = (
+            df.select_dtypes(
+                include=[
+                    "object",
+                    "category",
+                    "bool"
+                ]
+            )
+            .columns
+            .tolist()
+        )
 
-        missing_values = df.isna().sum().sum()
+        missing_values = (
+            df.isna()
+            .sum()
+            .sum()
+        )
 
-        st.subheader("Dataset Overview")
+        missing_percent = (
+            missing_values
+            /
+            (total_rows * total_cols)
+        ) * 100
 
-        c1, c2, c3, c4, c5 = st.columns(5)
+        if missing_percent < 5:
 
-        c1.metric("Rows", f"{total_rows:,}")
-        c2.metric("Columns", total_cols)
-        c3.metric("Numeric Variables", len(numeric_cols))
-        c4.metric("Categorical Variables", len(categorical_cols))
-        c5.metric("Missing Values", f"{missing_values:,}")
+            dataset_quality = "Good"
 
-        st.markdown("### Dataset Preview")
+        elif missing_percent <= 20:
+
+            dataset_quality = "Fair"
+
+        else:
+
+            dataset_quality = "Poor"
+
+        st.subheader(
+            "Dataset Overview"
+        )
+
+        c1, c2, c3, c4, c5, c6 = st.columns(6)
+
+        c1.metric(
+            "Rows",
+            f"{total_rows:,}"
+        )
+
+        c2.metric(
+            "Columns",
+            total_cols
+        )
+
+        c3.metric(
+            "Numeric Variables",
+            len(numeric_cols)
+        )
+
+        c4.metric(
+            "Categorical Variables",
+            len(categorical_cols)
+        )
+
+        c5.metric(
+            "Missing Values",
+            f"{missing_values:,}"
+        )
+
+        c6.metric(
+            "Dataset Quality",
+            dataset_quality
+        )
+
+        # --------------------------------------------------
+        # Preview
+        # --------------------------------------------------
+
+        st.markdown(
+            "### Dataset Preview (First 10 Rows)"
+        )
 
         st.dataframe(
             df.head(10),
             use_container_width=True
         )
 
+        # --------------------------------------------------
+        # Variable Information
+        # --------------------------------------------------
+
+        st.subheader(
+            "Variable Information"
+        )
+
+        info_df = pd.DataFrame({
+
+            "Column":
+                df.columns,
+
+            "Data Type":
+                df.dtypes.astype(str)
+
+        })
+
+        st.dataframe(
+            info_df,
+            use_container_width=True
+        )
+
         st.success(
-            "Dataset loaded successfully. "
-            "Use the sidebar to access statistical modules."
+            """
+            Dataset loaded successfully.
+            Use the sidebar to access statistical modules.
+            """
         )
 
     else:
