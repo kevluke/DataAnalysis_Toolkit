@@ -110,10 +110,6 @@ if page_title == "Dashboard":
         unsafe_allow_html=True
     )
 
-    # --------------------------------------------------
-    # Overview
-    # --------------------------------------------------
-
     with st.container(border=True):
 
         st.subheader("Overview")
@@ -125,10 +121,6 @@ if page_title == "Dashboard":
             hypothesis testing, and nonparametric methods.
             """
         )
-
-    # --------------------------------------------------
-    # Supported Methods
-    # --------------------------------------------------
 
     with st.container(border=True):
 
@@ -150,13 +142,10 @@ if page_title == "Dashboard":
             """
         )
 
-    # --------------------------------------------------
-    # File Upload
-    # --------------------------------------------------
-
     uploaded_file = st.file_uploader(
         "Upload Dataset",
-        type=["csv", "xlsx"]
+        type=["csv", "xlsx"],
+        key="dashboard_upload"
     )
 
     if uploaded_file is not None:
@@ -182,10 +171,6 @@ if page_title == "Dashboard":
             st.error(
                 f"Error loading file: {e}"
             )
-
-    # --------------------------------------------------
-    # Dataset Overview
-    # --------------------------------------------------
 
     if st.session_state["df"] is not None:
 
@@ -295,6 +280,7 @@ if page_title == "Dashboard":
                 df.dtypes.astype(str)
 
         })
+
         st.dataframe(
             info_df,
             use_container_width=True
@@ -307,4 +293,6 @@ if page_title == "Dashboard":
             """
         )
 
-      
+else:
+
+    pg.run()
