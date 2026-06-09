@@ -5,58 +5,145 @@ import scipy.stats as stats
 import matplotlib.pyplot as plt
 import seaborn as sns
 import statsmodels.api as sm
+
 from ui_components import apply_premium_theme
 
 apply_premium_theme()
 
-st.title("Distribution Normality Diagnostics")
+st.title("Normality Testing")
 
-with st.container(border=True):
-    st.markdown("### Methodological Blueprint: Gaussian Normality Assessments")
-    st.markdown("""
-    This diagnostics dashboard subjects a numerical field to checks to verify standard normal distribution patterns.
-    * **Shapiro-Wilk Test:** Evaluates sample variance alignment. Null hypothesis ($H_0$) assumes standard normal alignment.
-    * **Kolmogorov-Smirnov Test:** Identifies maximum vertical spatial divergence ($D$) against an ideal normal curve framework.
-    * **Quantile-Quantile (Q-Q) Plot:** Maps empirical distribution sorted values directly against theoretical normal parameters.
-    """)
+st.markdown("""
+Assess whether a numerical variable follows a normal distribution
+using statistical tests and graphical diagnostics.
+""")
 
-if 'df' not in st.session_state or st.session_state['df'] is None:
-    st.error("Please connect your source data file stream on the primary Dashboard interface first.")
+if "df" not in st.session_state or st.session_state["df"] is None:
+    st.error("Please upload a dataset from the Dashboard first.")
+
 else:
-    df = st.session_state['df']
+
+    df = st.session_state["df"]
+
     num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    selected_col = st.selectbox("Select Target Variable for Diagnostics:", num_cols)
+
+    if len(num_cols) == 0:
+        st.error("No numerical variables found in the dataset.")
+        st.stop()
+
+    selected_col = st.selectbox(
+        "Select Numerical Variable",
+        num_cols
+    )
+
     data = df[selected_col].dropna()
-    
+
     if len(data) < 3:
-        st.warning("Insufficient data elements to execute distribution modeling.")
+
+        st.warning(
+            "At least 3 observations are required for normality testing."
+        )
+
     else:
-        st.markdown("### Normality Hypothesis Tests Matrix")
+
+        st.subheader("Normality Test Results")
+
         if len(data) <= 5000:
-            shap_w, shap_p = stats.shapiro(data)
-            st.write(f"• **Shapiro-Wilk Test:** W-Statistic = `{shap_w:.4f}`, p-value = `{shap_p:.4e}`")
-        ks_w, ks_p = stats.kstest(data, 'norm', args=(data.mean(), data.std()))
-        st.write(f"• **Kolmogorov-Smirnov Test:** D-Distance = `{ks_w:.4f}`, p-value = `{ks_p:.4e}`")
-        
-        st.markdown("### Visual Distribution Profiles")
-        plot_col1, plot_col2 = st.columns(2)
-        with plot_col1:
-            st.subheader("Probability Density Function (PDF)")
-            fig1, ax1 = plt.subplots(figsize=(6, 4.2))
-            sns.histplot(data, kde=True, stat="density", ax=ax1, color="purple")
+
+            shapiro_stat, shapiro_p = stats.shapiro(data)
+
+            st.write(
+                f"**Shapiro-Wilk Test** → "
+                f"W = {shapiro_stat:.4f}, "
+                f"p = {shapiro_p:.4f}"
+            )
+
+        ks_stat, ks_p = stats.kstest(
+            data,
+            "norm",
+            args=(data.mean(), data.std())
+        )
+
+        st.write(
+            f"**Kolmogorov-Smirnov Test** → "
+            f"D = {ks_stat:.4f}, "
+            f"p = {ks_p:.4f}"
+        )
+
+        st.subheader("Visual Diagnostics")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+
+            fig1, ax1 = plt.subplots(figsize=(6, 4))
+
+            sns.histplot(
+                data,
+                kde=True,
+                stat="density",
+                ax=ax1
+            )
+
+            ax1.set_title(
+                f"Distribution of {selected_col}"
+            )
+
             st.pyplot(fig1)
+
             plt.close(fig1)
-        with plot_col2:
-            st.subheader("Quantile-Quantile (Q-Q) Map")
-            fig2, ax2 = plt.subplots(figsize=(6, 4.2))
-            sm.qqplot(data, line='s', ax=ax2)
+
+        with col2:
+
+            fig2, ax2 = plt.subplots(figsize=(6, 4))
+
+            sm.qqplot(
+                data,
+                line="s",
+                ax=ax2
+            )
+
+            ax2.set_title(
+                "Q-Q Plot"
+            )
+
             st.pyplot(fig2)
+
             plt.close(fig2)
 
+        st.subheader("Interpretation")
+
         with st.container(border=True):
-            st.markdown("#### 🔬 DIAGNOSTIC INTERPRETATION REPORT")
-            is_normal = ks_p >= 0.05
-            if is_normal:
-                st.success(f"• **Conclusion:** The metrics show no statistically significant deviation from a normal pattern (p = {ks_p:.4f}). You are safe to use standard parametric tools (like T-Tests or ANOVA models).")
+
+            if len(data) <= 5000:
+
+                if shapiro_p >= 0.05:
+
+                    st.success(
+                        "Shapiro-Wilk suggests that the data does not significantly differ from a normal distribution."
+                    )
+
+                else:
+
+                    st.warning(
+                        "Shapiro-Wilk suggests that the data significantly differs from a normal distribution."
+                    )
+
+            if ks_p >= 0.05:
+
+                st.success(
+                    "Kolmogorov-Smirnov suggests that the data is reasonably consistent with a normal distribution."
+                )
+
             else:
-                st.warning(f"• **Conclusion:** The metrics show significant structural deviations from a standard normal curve (p = {ks_p:.4e}). To preserve accuracy, consider applying a data transformation or switching to non-parametric rank alternatives.")
+
+                st.warning(
+                    "Kolmogorov-Smirnov suggests that the data is not normally distributed."
+                )
+
+            st.write("""
+            **Guideline**
+
+            - If both tests have p-values greater than 0.05, normality can generally be assumed.
+            - If one or both tests are significant, consider transformations or nonparametric methods.
+            - The histogram and Q-Q plot should always be reviewed alongside the test results.
+            """)
