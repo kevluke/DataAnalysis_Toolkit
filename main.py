@@ -4,7 +4,7 @@ import numpy as np
 from ui_components import apply_premium_theme
 
 # --------------------------------------------------
-# Base Configuration
+# Page Configuration
 # --------------------------------------------------
 
 st.set_page_config(
@@ -13,34 +13,69 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
+apply_premium_theme()
+
 if "df" not in st.session_state:
     st.session_state["df"] = None
 
-apply_premium_theme()
-
 # --------------------------------------------------
-# Navigation
+# Navigation Structure
 # --------------------------------------------------
 
 workspace_navigation = {
-    "CORE DASHBOARD": [
-        st.Page("main.py", title="Data Ingestion Workspace")
+
+    "DATA": [
+        st.Page("main.py", title="Dashboard")
     ],
-    "DATA EXPLORATION": [
-        st.Page("pages/1_Descriptive.py", title="Descriptive Analysis"),
-        st.Page("pages/2_Visualization.py", title="Visualization Studio"),
-        st.Page("pages/4_Normality-Test.py", title="Normality Diagnostics"),
-        st.Page("pages/5_Central_Limit_Theorem.py", title="CLT Simulator Engine")
+
+    "EXPLORATION": [
+        st.Page(
+            "pages/1_Descriptive.py",
+            title="Descriptive Statistics"
+        ),
+
+        st.Page(
+            "pages/2_Visualization.py",
+            title="Visualizations"
+        ),
+
+        st.Page(
+            "pages/4_Normality-Test.py",
+            title="Normality Testing"
+        ),
+
+        st.Page(
+            "pages/5_Central_Limit_Theorem.py",
+            title="Central Limit Theorem"
+        )
     ],
-    "MODEL FITTING": [
-        st.Page("pages/3_Fitting_Method.py", title="Least Squares Method Engine")
-    ],
-    "INFERENCE TESTING": [
-        st.Page("pages/6_T-test.py", title="Student T-Test Suite"),
-        st.Page("pages/8_Z-test.py", title="Asymptotic Z-Test Core"),
-        st.Page("pages/7_Anova.py", title="ANOVA Workspace"),
-        st.Page("pages/9_Chi square -test.py", title="Chi-Square Analysis Suite"),
-        st.Page("pages/10_Nonparametric.py", title="Non-Parametric Suite")
+
+    "HYPOTHESIS TESTING": [
+
+        st.Page(
+            "pages/6_T-test.py",
+            title="T-Test"
+        ),
+
+        st.Page(
+            "pages/8_Z-test.py",
+            title="Z-Test"
+        ),
+
+        st.Page(
+            "pages/7_Anova.py",
+            title="ANOVA"
+        ),
+
+        st.Page(
+            "pages/9_Chi square -test.py",
+            title="Chi-Square"
+        ),
+
+        st.Page(
+            "pages/10_Nonparametric.py",
+            title="Nonparametric Tests"
+        )
     ]
 }
 
@@ -51,41 +86,52 @@ pg = st.navigation(workspace_navigation)
 # --------------------------------------------------
 
 try:
-    current_title = pg.title
+    page_title = pg.title
 except:
-    current_title = "Data Ingestion Workspace"
+    page_title = "Dashboard"
 
-if current_title == "Data Ingestion Workspace":
+if page_title == "Dashboard":
 
-    st.markdown(
-        "<h2 style='font-weight:700;'>📥 Data Ingestion Workspace</h2>",
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <h1 style="margin-bottom:0;">
+    StatLab Suite
+    </h1>
+
+    <p style="font-size:1rem;color:gray;">
+    Statistical Analysis Toolkit
+    </p>
+    """, unsafe_allow_html=True)
 
     with st.container(border=True):
-        st.markdown("### 📘 Methodological Blueprint: Pipeline Synchronization")
-        st.markdown("""
-        Upload your tabular data stream (.csv or .xlsx).
-        The workspace maps, profiles and shares structural states
-        globally with downstream analytical modules.
+
+        st.subheader("Overview")
+
+        st.write("""
+        Upload a CSV or Excel dataset and explore it using
+        descriptive statistics, visualizations, normality tests,
+        hypothesis testing, and nonparametric methods.
         """)
 
-    source_file = st.file_uploader(
-        "Upload Target Data Stream:",
+    uploaded_file = st.file_uploader(
+        "Upload Dataset",
         type=["csv", "xlsx"]
     )
 
-    if source_file is not None:
+    if uploaded_file is not None:
+
         try:
-            if source_file.name.endswith(".csv"):
-                df = pd.read_csv(source_file)
+
+            if uploaded_file.name.endswith(".csv"):
+                df = pd.read_csv(uploaded_file)
+
             else:
-                df = pd.read_excel(source_file)
+                df = pd.read_excel(uploaded_file)
 
             st.session_state["df"] = df
 
         except Exception as e:
-            st.error(f"Ingestion Pipeline Fault: {e}")
+
+            st.error(f"Error loading file: {e}")
 
     if st.session_state["df"] is not None:
 
@@ -93,55 +139,44 @@ if current_title == "Data Ingestion Workspace":
 
         total_rows, total_cols = df.shape
 
-        categorical_cols = df.select_dtypes(
-            include=["object", "category", "bool"]
-        ).columns.tolist()
-
         numeric_cols = df.select_dtypes(
             include=[np.number]
         ).columns.tolist()
 
-        missing_cells = df.isna().sum().sum()
+        categorical_cols = df.select_dtypes(
+            include=["object", "category", "bool"]
+        ).columns.tolist()
 
-        st.markdown(
-            """
-            <h4 style='font-size:0.8rem;
-                       font-weight:700;
-                       letter-spacing:0.05em;
-                       margin:20px 0 10px 0;'>
-            STRUCTURAL DATA PARAMETERS
-            </h4>
-            """,
-            unsafe_allow_html=True
-        )
+        missing_values = df.isna().sum().sum()
+
+        st.subheader("Dataset Overview")
 
         c1, c2, c3, c4, c5 = st.columns(5)
 
-        with c1:
-            st.metric("NUMBER OF ROWS", f"{total_rows:,}")
+        c1.metric("Rows", f"{total_rows:,}")
+        c2.metric("Columns", total_cols)
+        c3.metric("Numeric Variables", len(numeric_cols))
+        c4.metric("Categorical Variables", len(categorical_cols))
+        c5.metric("Missing Values", f"{missing_values:,}")
 
-        with c2:
-            st.metric("NUMBER OF COLUMNS", total_cols)
+        st.markdown("### Dataset Preview")
 
-        with c3:
-            st.metric("NUMERICAL FEATURES", len(numeric_cols))
-
-        with c4:
-            st.metric("CATEGORICAL FEATURES", len(categorical_cols))
-
-        with c5:
-            st.metric("MISSING VALUES", f"{missing_cells:,}")
-
-        st.markdown("### Data Preview")
-        st.dataframe(df.head(10), use_container_width=True)
+        st.dataframe(
+            df.head(10),
+            use_container_width=True
+        )
 
         st.success(
-            "Workspace initialized successfully. "
-            "Use the sidebar to navigate to analytical modules."
+            "Dataset loaded successfully. "
+            "Use the sidebar to access statistical modules."
         )
 
     else:
-        st.info("Awaiting dataset upload.")
+
+        st.info(
+            "Upload a CSV or Excel file to begin analysis."
+        )
 
 else:
+
     pg.run()

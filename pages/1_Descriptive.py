@@ -1,75 +1,132 @@
 import streamlit as st
 import pandas as pd
 import numpy as np
-import scipy.stats as stats
 from ui_components import apply_premium_theme
 
 apply_premium_theme()
 
-st.markdown("<h2 style='font-weight: 700;'>📈 Descriptive Analysis Workspace</h2>", unsafe_allow_html=True)
+st.title("Descriptive Statistics")
 
-with st.container(border=True):
-    st.markdown("### 📘 Methodological Blueprint: Descriptive Analytics")
-    st.markdown("""
-    This workspace processes raw univariate continuous or discrete distribution series across three fundamental mathematical properties:
-    * **Measures of Central Tendency:** Absolute mathematical center of mass (Arithmetic Mean) and true mid-point coordinates (Median).
-    * **Measures of Dispersion & Variability:** Quantifies data scattering width (Variance, Standard Deviation, and IQR).
-    * **Higher-Order Distributional Moments:** Skewness (directional asymmetry) and Excess Kurtosis (tail-weight profile).
-    """)
+st.markdown("""
+Explore the key characteristics of a numerical variable, including
+central tendency, variability, distribution shape, and spread.
+""")
 
-if 'df' not in st.session_state or st.session_state['df'] is None:
-    st.error("Please connect your source data file stream on the primary Dashboard interface first.")
+if "df" not in st.session_state or st.session_state["df"] is None:
+    st.error("Please upload a dataset from the Dashboard first.")
+
 else:
-    df = st.session_state['df']
-    num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
-    
-    selected_var = st.selectbox("CHOOSE METRIC VARIABLE SCALE NODE:", num_cols)
-    vec = df[selected_var].dropna()
-    
-    v_mean = vec.mean()
-    v_med = vec.median()
-    v_var = vec.var()
-    v_std = vec.std()
-    v_min, v_max = vec.min(), vec.max()
-    v_range = v_max - v_min
-    q25, q75 = np.percentile(vec, [25, 75])
-    v_iqr = q75 - q25
-    v_skew = vec.skew()
-    v_kurt = vec.kurtosis()
-    
-    st.markdown("### Assumption Verification & Constraints")
-    with st.container(border=True):
-        st.markdown("**Data Integrity Checks:**")
-        st.write(f"• Sample Size count: `{len(vec)}` observed non-null data elements.")
-        st.write(f"• Total missing or dropped null cells: `{df[selected_var].isna().sum()}` records.")
-        if len(vec) < 5:
-            st.warning("Warning: Very small sample array sizes limit higher-moment reliability calculations.")
-        else:
-            st.success("Pass: Continuous matrix series sizes meet estimation parameters.")
 
-    st.markdown("### Calculated Mathematical Properties Matrix")
+    df = st.session_state["df"]
+
+    num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+
+    if len(num_cols) == 0:
+        st.error("No numerical variables were found in the dataset.")
+        st.stop()
+
+    selected_var = st.selectbox(
+        "Select Numerical Variable",
+        num_cols
+    )
+
+    vec = df[selected_var].dropna()
+
+    mean_val = vec.mean()
+    median_val = vec.median()
+    variance_val = vec.var()
+    std_val = vec.std()
+
+    min_val = vec.min()
+    max_val = vec.max()
+
+    range_val = max_val - min_val
+
+    q1, q3 = np.percentile(vec, [25, 75])
+
+    iqr_val = q3 - q1
+
+    skew_val = vec.skew()
+    kurt_val = vec.kurtosis()
+
+    st.subheader("Data Summary")
+
     c1, c2, c3, c4 = st.columns(4)
-    c1.metric("ARITHMETIC MEAN", f"{v_mean:.4f}")
-    c2.metric("MEDIAN NODE (Q2)", f"{v_med:.4f}")
-    c3.metric("VARIANCE METRIC", f"{v_var:.4f}")
-    c4.metric("STANDARD DEV", f"{v_std:.4f}")
-    
-    cc1, cc2 = st.columns(2)
-    with cc1:
-        with st.container(border=True): st.metric("INTERQUARTILE RANGE (IQR)", f"{v_iqr:.4f}")
-    with cc2:
-        with st.container(border=True): st.metric("MOMENT COEFFICIENTS (SKEW / KURT)", f"{v_skew:.2f} / {v_kurt:.2f}")
-            
+
+    c1.metric("Mean", f"{mean_val:.4f}")
+    c2.metric("Median", f"{median_val:.4f}")
+    c3.metric("Variance", f"{variance_val:.4f}")
+    c4.metric("Standard Deviation", f"{std_val:.4f}")
+
+    c5, c6, c7, c8 = st.columns(4)
+
+    c5.metric("Minimum", f"{min_val:.4f}")
+    c6.metric("Maximum", f"{max_val:.4f}")
+    c7.metric("Range", f"{range_val:.4f}")
+    c8.metric("IQR", f"{iqr_val:.4f}")
+
+    st.subheader("Distribution Shape")
+
+    c9, c10 = st.columns(2)
+
+    c9.metric("Skewness", f"{skew_val:.4f}")
+    c10.metric("Kurtosis", f"{kurt_val:.4f}")
+
+    st.subheader("Data Quality")
+
     with st.container(border=True):
-        st.markdown("<h4 style='font-size: 0.8rem; font-weight: 700; color: #666666; margin: 0 0 12px 0;'>🔬 AUTOMATED MACHINE INTERPRETATION ENGINE</h4>", unsafe_allow_html=True)
-        if abs(v_skew) < 0.5: skew_msg = f"Skewness Coefficient ({v_skew:.2f}) indicates an approximately symmetrical distribution."
-        elif v_skew >= 0.5: skew_msg = f"Skewness Coefficient ({v_skew:.2f}) reflects a high right-sided tail extension (Positive Skew)."
-        else: skew_msg = f"Skewness Coefficient ({v_skew:.2f}) reflects a high left-sided tail extension (Negative Skew)."
-        
-        if v_kurt > 0.5: kurt_msg = f"Excess Kurtosis ({v_kurt:.2f}) indicates heavy distribution tails (Leptokurtic shape)."
-        elif v_kurt < -0.5: kurt_msg = f"Excess Kurtosis ({v_kurt:.2f}) indicates an extremely flat, thin-tailed distribution (Platykurtic shape)."
-        else: kurt_msg = f"Excess Kurtosis ({v_kurt:.2f}) indicates standard mesokurtic convergence parameters."
-        
-        st.write(f"• **Asymmetry Evaluation:** {skew_msg}")
-        st.write(f"• **Peak Tail Tailoring:** {kurt_msg}")
-        st.write(f"• **Spread Coverage Profile:** The distribution elements span a maximum range of `{v_range:.4f}` units, centered at `{v_mean:.4f}` with a standard dispersion scale factor of `{v_std:.4f}`.")
+
+        st.write(
+            f"Sample Size: {len(vec)} observations"
+        )
+
+        st.write(
+            f"Missing Values: {df[selected_var].isna().sum()}"
+        )
+
+        if len(vec) < 5:
+            st.warning(
+                "Very small sample sizes may produce unstable estimates."
+            )
+        else:
+            st.success(
+                "Sample size is adequate for descriptive analysis."
+            )
+
+    st.subheader("Interpretation")
+
+    with st.container(border=True):
+
+        if abs(skew_val) < 0.5:
+            st.write(
+                f"• The distribution is approximately symmetric (Skewness = {skew_val:.2f})."
+            )
+
+        elif skew_val > 0:
+            st.write(
+                f"• The distribution is positively skewed (Skewness = {skew_val:.2f})."
+            )
+
+        else:
+            st.write(
+                f"• The distribution is negatively skewed (Skewness = {skew_val:.2f})."
+            )
+
+        if kurt_val > 0.5:
+            st.write(
+                f"• The distribution has heavier tails than normal (Kurtosis = {kurt_val:.2f})."
+            )
+
+        elif kurt_val < -0.5:
+            st.write(
+                f"• The distribution has lighter tails than normal (Kurtosis = {kurt_val:.2f})."
+            )
+
+        else:
+            st.write(
+                f"• The distribution has a shape close to normal (Kurtosis = {kurt_val:.2f})."
+            )
+
+        st.write(
+            f"• Values range from {min_val:.4f} to {max_val:.4f} with an average of {mean_val:.4f}."
+        )

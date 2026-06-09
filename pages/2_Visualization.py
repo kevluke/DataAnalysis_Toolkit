@@ -7,7 +7,7 @@ from ui_components import apply_premium_theme
 
 apply_premium_theme()
 
-st.title("Visualization Studio")
+st.title("Visualization")
 
 with st.container(border=True):
     st.markdown("### Methodological Blueprint: Continuous vs Discrete Probability Mapping")
