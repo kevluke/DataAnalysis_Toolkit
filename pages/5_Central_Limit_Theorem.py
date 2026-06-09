@@ -1,117 +1,338 @@
 import streamlit as st
 import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import statsmodels.api as sm
 import scipy.stats as stats
+import statsmodels.api as sm
+
 from ui_components import apply_premium_theme
 
 apply_premium_theme()
 
-st.title("Central Limit Theorem (CLT) Simulator Engine")
+st.title("Central Limit Theorem")
 
-with st.container(border=True):
-    st.markdown("### Methodological Blueprint: The Central Limit Theorem")
-    st.markdown("""
-    The **Central Limit Theorem (CLT)** states that as long as your sample size ($n$) grows large enough ($n \ge 30$), 
-    the **distribution of sample means will approach a normal bell curve shape**, regardless of how skewed or chaotic 
-    the underlying parent population distribution layout is.
-    """)
+st.markdown("""
+Explore how the sampling distribution of sample means becomes
+approximately normal as sample size increases, regardless of the
+underlying population distribution.
+""")
 
-with st.container(border=True):
-    st.write("### Simulation Engine Settings")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        population_type = st.selectbox("Select Population Distribution Shape:", ["Highly Skewed (Exponential)", "Uniform Flat", "Bimodal (Double Peak)"])
-    with col2:
-        sample_size = st.slider("Sample Size (n) per draw:", min_value=2, max_value=200, value=30)
-    with col3:
-        num_simulations = st.number_input("Number of Simulation Draws:", min_value=100, max_value=5000, value=1000, step=100)
+st.subheader("Simulation Settings")
+
+col1, col2, col3 = st.columns(3)
+
+with col1:
+
+    population_type = st.selectbox(
+        "Population Distribution",
+        [
+            "Exponential (Skewed)",
+            "Uniform",
+            "Bimodal"
+        ]
+    )
+
+with col2:
+
+    sample_size = st.slider(
+        "Sample Size (n)",
+        min_value=2,
+        max_value=200,
+        value=30
+    )
+
+with col3:
+
+    num_simulations = st.number_input(
+        "Number of Samples",
+        min_value=100,
+        max_value=5000,
+        value=1000,
+        step=100
+    )
+
+# ==================================================
+# POPULATION GENERATION
+# ==================================================
 
 np.random.seed(42)
-pop_size = 50000
 
-if population_type == "Highly Skewed (Exponential)":
-    population_data = np.random.exponential(scale=2.0, size=pop_size)
-elif population_type == "Uniform Flat":
-    population_data = np.random.uniform(low=0.0, high=10.0, size=pop_size)
+population_size = 50000
+
+if population_type == "Exponential (Skewed)":
+
+    population_data = np.random.exponential(
+        scale=2,
+        size=population_size
+    )
+
+elif population_type == "Uniform":
+
+    population_data = np.random.uniform(
+        low=0,
+        high=10,
+        size=population_size
+    )
+
 else:
-    pop_a = np.random.normal(loc=2.0, scale=0.5, size=25000)
-    pop_b = np.random.normal(loc=6.0, scale=0.5, size=25000)
-    population_data = np.concatenate([pop_a, pop_b])
 
-sample_means = [np.mean(np.random.choice(population_data, size=sample_size, replace=False)) for _ in range(num_simulations)]
+    pop_a = np.random.normal(
+        2,
+        0.5,
+        25000
+    )
 
-t1, t2 = st.tabs(["Sampling Distribution Profile", "Parent Population Shape"])
-with t1:
-    plot_col1, plot_col2 = st.columns(2)
-    with plot_col1:
-        st.write("**Sample Means Histogram & Fitted Normal Approximation Curve**")
-        
-        fig, ax = plt.subplots(figsize=(6, 4.2))
-        
-        # Explicit background assignments
-        fig.patch.set_facecolor("#181A1F")
-        ax.set_facecolor("#242529")
-        ax.grid(True, color="#3A3B40", linestyle="--", linewidth=0.5)
-        
-        ax.tick_params(colors="#A3A3A3", labelsize=9)
-        ax.xaxis.label.set_color("#F5F5F5")
-        ax.yaxis.label.set_color("#F5F5F5")
-        for spine in ax.spines.values():
-            spine.set_color("#3A3B40")
+    pop_b = np.random.normal(
+        6,
+        0.5,
+        25000
+    )
 
-        # Plot data
-        sns.histplot(sample_means, kde=True, stat="density", ax=ax, color="#00B894", edgecolor="#181A1F", alpha=0.6)
-        
-        xmin, xmax = ax.get_xlim()
-        x_axis = np.linspace(xmin, xmax, 100)
-        y_axis = stats.norm.pdf(x_axis, loc=np.mean(sample_means), scale=np.std(sample_means))
-        ax.plot(x_axis, y_axis, color="#7C5CFF", linestyle="--", lw=2, label="Theoretical Normal")
-        ax.legend(facecolor="#242529", edgecolor="#3A3B40", labelcolor="#F5F5F5")
-        
-        # CRITICAL FIX: Pass transparent=False to keep our dark background intact
-        st.pyplot(fig, clear_figure=True, transparent=False)
-        plt.close(fig)
-        
-    with plot_col2:
-        st.write("**Quantile-Quantile (Q-Q) Plot**")
-        fig2, ax2 = plt.subplots(figsize=(6, 4.2))
-        
-        fig2.patch.set_facecolor("#181A1F")
-        ax2.set_facecolor("#242529")
-        ax2.grid(True, color="#3A3B40", linestyle="--", linewidth=0.5)
-        ax2.tick_params(colors="#A3A3A3", labelsize=9)
-        ax2.xaxis.label.set_color("#F5F5F5")
-        ax2.yaxis.label.set_color("#F5F5F5")
-        for spine in ax2.spines.values():
-            spine.set_color("#3A3B40")
-        
-        sm.qqplot(np.array(sample_means), line='s', ax=ax2)
-        
-        ax2.get_lines()[1].set_color("#EF4444")
-        ax2.get_lines()[0].set_color("#7C5CFF")
-        
-        # CRITICAL FIX: Pass transparent=False to keep our dark background intact
-        st.pyplot(fig2, clear_figure=True, transparent=False)
-        plt.close(fig2)
+    population_data = np.concatenate(
+        [pop_a, pop_b]
+    )
 
-with t2:
-    st.write("**Parent Population Distribution**")
-    fig3, ax3 = plt.subplots(figsize=(10, 2.5))
-    
-    fig3.patch.set_facecolor("#181A1F")
-    ax3.set_facecolor("#242529")
-    ax3.grid(True, color="#3A3B40", linestyle="--", linewidth=0.5)
-    ax3.tick_params(colors="#A3A3A3", labelsize=9)
-    ax3.xaxis.label.set_color("#F5F5F5")
-    ax3.yaxis.label.set_color("#F5F5F5")
-    for spine in ax3.spines.values():
-        spine.set_color("#3A3B40")
-        
-    sns.histplot(population_data, kde=True, ax=ax3, color="#A78BFA", edgecolor="#181A1F", stat="density", alpha=0.5)
-    
-    # CRITICAL FIX: Pass transparent=False to keep our dark background intact
-    st.pyplot(fig3, clear_figure=True, transparent=False)
+# ==================================================
+# SAMPLE MEANS
+# ==================================================
+
+sample_means = []
+
+for _ in range(num_simulations):
+
+    sample = np.random.choice(
+        population_data,
+        size=sample_size,
+        replace=False
+    )
+
+    sample_means.append(
+        np.mean(sample)
+    )
+
+sample_means = np.array(
+    sample_means
+)
+
+# ==================================================
+# SUMMARY METRICS
+# ==================================================
+
+population_mean = np.mean(
+    population_data
+)
+
+sample_mean_mean = np.mean(
+    sample_means
+)
+
+population_std = np.std(
+    population_data
+)
+
+sampling_std = np.std(
+    sample_means
+)
+
+theoretical_se = (
+    population_std
+    /
+    np.sqrt(sample_size)
+)
+
+st.subheader(
+    "Summary Statistics"
+)
+
+m1, m2, m3, m4 = st.columns(4)
+
+m1.metric(
+    "Population Mean",
+    f"{population_mean:.4f}"
+)
+
+m2.metric(
+    "Mean of Sample Means",
+    f"{sample_mean_mean:.4f}"
+)
+
+m3.metric(
+    "Sampling Std Dev",
+    f"{sampling_std:.4f}"
+)
+
+m4.metric(
+    "Theoretical SE",
+    f"{theoretical_se:.4f}"
+)
+
+# ==================================================
+# NORMALITY TEST
+# ==================================================
+
+shapiro_stat, shapiro_p = stats.shapiro(
+    sample_means[:5000]
+)
+
+st.subheader(
+    "Sampling Distribution Check"
+)
+
+c1, c2 = st.columns(2)
+
+c1.metric(
+    "Shapiro-Wilk Statistic",
+    f"{shapiro_stat:.4f}"
+)
+
+c2.metric(
+    "P Value",
+    f"{shapiro_p:.4f}"
+)
+
+# ==================================================
+# VISUALS
+# ==================================================
+
+tab1, tab2, tab3 = st.tabs(
+    [
+        "Sampling Distribution",
+        "Q-Q Plot",
+        "Population Distribution"
+    ]
+)
+
+with tab1:
+
+    fig, ax = plt.subplots(
+        figsize=(9,4)
+    )
+
+    sns.histplot(
+        sample_means,
+        kde=True,
+        stat="density",
+        ax=ax
+    )
+
+    x = np.linspace(
+        sample_means.min(),
+        sample_means.max(),
+        100
+    )
+
+    y = stats.norm.pdf(
+        x,
+        np.mean(sample_means),
+        np.std(sample_means)
+    )
+
+    ax.plot(
+        x,
+        y,
+        linestyle="--",
+        linewidth=2
+    )
+
+    ax.set_title(
+        "Distribution of Sample Means"
+    )
+
+    st.pyplot(fig)
+
+    plt.close(fig)
+
+with tab2:
+
+    fig2, ax2 = plt.subplots(
+        figsize=(6,4)
+    )
+
+    sm.qqplot(
+        sample_means,
+        line="s",
+        ax=ax2
+    )
+
+    ax2.set_title(
+        "Q-Q Plot"
+    )
+
+    st.pyplot(fig2)
+
+    plt.close(fig2)
+
+with tab3:
+
+    fig3, ax3 = plt.subplots(
+        figsize=(9,4)
+    )
+
+    sns.histplot(
+        population_data,
+        kde=True,
+        stat="density",
+        ax=ax3
+    )
+
+    ax3.set_title(
+        "Population Distribution"
+    )
+
+    st.pyplot(fig3)
+
     plt.close(fig3)
+
+# ==================================================
+# INTERPRETATION
+# ==================================================
+
+st.subheader(
+    "Interpretation"
+)
+
+with st.container(border=True):
+
+    st.write(
+        f"• Population Mean = {population_mean:.4f}"
+    )
+
+    st.write(
+        f"• Mean of Sample Means = {sample_mean_mean:.4f}"
+    )
+
+    st.write(
+        "• As predicted by the Central Limit Theorem, the mean of the sampling distribution approaches the population mean."
+    )
+
+    st.write(
+        f"• Theoretical Standard Error = {theoretical_se:.4f}"
+    )
+
+    st.write(
+        f"• Observed Sampling Standard Deviation = {sampling_std:.4f}"
+    )
+
+    if shapiro_p >= 0.05:
+
+        st.success(
+            "The sampling distribution is approximately normal."
+        )
+
+    else:
+
+        st.warning(
+            "The sampling distribution shows some deviation from normality."
+        )
+
+    if sample_size >= 30:
+
+        st.success(
+            "Sample size is large enough for the Central Limit Theorem to typically apply."
+        )
+
+    else:
+
+        st.info(
+            "Smaller sample sizes may require a more normally distributed population."
+        )

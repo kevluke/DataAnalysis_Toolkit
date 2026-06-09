@@ -1,5 +1,6 @@
 import streamlit as st
 import numpy as np
+import pandas as pd
 
 from statsmodels.stats.weightstats import ztest as ztest_func
 
@@ -34,9 +35,9 @@ else:
         ]
     )
 
-    # --------------------------------------------------
-    # ONE SAMPLE
-    # --------------------------------------------------
+    # ==================================================
+    # ONE SAMPLE Z TEST
+    # ==================================================
 
     if z_test_type == "One-Sample Z-Test":
 
@@ -61,9 +62,36 @@ else:
                 value=hypothesized_mean
             )
 
+            mean_val = np.mean(data)
+
+            std_dev = np.std(
+                data,
+                ddof=1
+            )
+
+            cohens_d = (
+                mean_val -
+                hypothesized_mean
+            ) / std_dev
+
+            std_error = (
+                std_dev /
+                np.sqrt(sample_size)
+            )
+
+            ci_low = (
+                mean_val -
+                1.96 * std_error
+            )
+
+            ci_high = (
+                mean_val +
+                1.96 * std_error
+            )
+
             st.subheader("Results")
 
-            c1, c2 = st.columns(2)
+            c1, c2, c3 = st.columns(3)
 
             c1.metric(
                 "Z Statistic",
@@ -75,7 +103,19 @@ else:
                 f"{p_val:.4f}"
             )
 
-            st.subheader("Sample Size Check")
+            c3.metric(
+                "Cohen's d",
+                f"{cohens_d:.4f}"
+            )
+
+            st.metric(
+                "95% Confidence Interval",
+                f"[{ci_low:.4f}, {ci_high:.4f}]"
+            )
+
+            st.subheader(
+                "Sample Size Check"
+            )
 
             with st.container(border=True):
 
@@ -95,7 +135,9 @@ else:
                         "Sample size is below 30. A T-test may be more appropriate."
                     )
 
-            st.subheader("Interpretation")
+            st.subheader(
+                "Interpretation"
+            )
 
             with st.container(border=True):
 
@@ -119,9 +161,39 @@ else:
                         """
                     )
 
-    # --------------------------------------------------
-    # TWO SAMPLE
-    # --------------------------------------------------
+                st.markdown(
+                    "### Effect Size"
+                )
+
+                abs_d = abs(cohens_d)
+
+                if abs_d < 0.2:
+
+                    st.info(
+                        "Negligible effect size."
+                    )
+
+                elif abs_d < 0.5:
+
+                    st.info(
+                        "Small effect size."
+                    )
+
+                elif abs_d < 0.8:
+
+                    st.info(
+                        "Medium effect size."
+                    )
+
+                else:
+
+                    st.success(
+                        "Large effect size."
+                    )
+
+    # ==================================================
+    # TWO SAMPLE Z TEST
+    # ==================================================
 
     else:
 
@@ -182,9 +254,51 @@ else:
                     v2
                 )
 
+                mean_diff = (
+                    np.mean(v1)
+                    -
+                    np.mean(v2)
+                )
+
+                n1 = len(v1)
+                n2 = len(v2)
+
+                pooled_std = np.sqrt(
+                    (
+                        ((n1 - 1) * np.var(v1, ddof=1))
+                        +
+                        ((n2 - 1) * np.var(v2, ddof=1))
+                    )
+                    /
+                    (n1 + n2 - 2)
+                )
+
+                cohens_d = (
+                    mean_diff /
+                    pooled_std
+                )
+
+                se_diff = np.sqrt(
+                    np.var(v1, ddof=1) / n1
+                    +
+                    np.var(v2, ddof=1) / n2
+                )
+
+                ci_low = (
+                    mean_diff
+                    -
+                    1.96 * se_diff
+                )
+
+                ci_high = (
+                    mean_diff
+                    +
+                    1.96 * se_diff
+                )
+
                 st.subheader("Results")
 
-                c1, c2 = st.columns(2)
+                c1, c2, c3 = st.columns(3)
 
                 c1.metric(
                     "Z Statistic",
@@ -196,19 +310,31 @@ else:
                     f"{p_val:.4f}"
                 )
 
-                st.subheader("Sample Size Check")
+                c3.metric(
+                    "Cohen's d",
+                    f"{cohens_d:.4f}"
+                )
+
+                st.metric(
+                    "95% Confidence Interval",
+                    f"[{ci_low:.4f}, {ci_high:.4f}]"
+                )
+
+                st.subheader(
+                    "Sample Size Check"
+                )
 
                 with st.container(border=True):
 
                     st.write(
-                        f"Group 1 Size: {len(v1)}"
+                        f"Group 1 Size: {n1}"
                     )
 
                     st.write(
-                        f"Group 2 Size: {len(v2)}"
+                        f"Group 2 Size: {n2}"
                     )
 
-                    if len(v1) >= 30 and len(v2) >= 30:
+                    if n1 >= 30 and n2 >= 30:
 
                         st.success(
                             "Both groups satisfy the recommended sample size requirement."
@@ -220,7 +346,9 @@ else:
                             "One or both groups contain fewer than 30 observations. A T-test may be more appropriate."
                         )
 
-                st.subheader("Interpretation")
+                st.subheader(
+                    "Interpretation"
+                )
 
                 with st.container(border=True):
 
@@ -242,4 +370,34 @@ else:
                             difference was found between
                             {group1} and {group2}.
                             """
+                        )
+
+                    st.markdown(
+                        "### Effect Size"
+                    )
+
+                    abs_d = abs(cohens_d)
+
+                    if abs_d < 0.2:
+
+                        st.info(
+                            "Negligible effect size."
+                        )
+
+                    elif abs_d < 0.5:
+
+                        st.info(
+                            "Small effect size."
+                        )
+
+                    elif abs_d < 0.8:
+
+                        st.info(
+                            "Medium effect size."
+                        )
+
+                    else:
+
+                        st.success(
+                            "Large effect size."
                         )

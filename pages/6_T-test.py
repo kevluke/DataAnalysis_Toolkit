@@ -3,6 +3,7 @@ import scipy.stats as stats
 import pandas as pd
 import numpy as np
 
+from scipy.stats import sem
 from ui_components import apply_premium_theme
 
 apply_premium_theme()
@@ -38,9 +39,9 @@ else:
         ]
     )
 
-    # --------------------------------------------------
-    # ONE SAMPLE
-    # --------------------------------------------------
+    # ==================================================
+    # ONE-SAMPLE T-TEST
+    # ==================================================
 
     if test_mode == "One-Sample T-Test":
 
@@ -63,9 +64,27 @@ else:
                 mu_0
             )
 
+            mean_val = np.mean(data)
+
+            std_dev = np.std(
+                data,
+                ddof=1
+            )
+
+            cohens_d = (
+                mean_val - mu_0
+            ) / std_dev
+
+            ci_low, ci_high = stats.t.interval(
+                0.95,
+                len(data) - 1,
+                loc=mean_val,
+                scale=sem(data)
+            )
+
             st.subheader("Results")
 
-            c1, c2 = st.columns(2)
+            c1, c2, c3 = st.columns(3)
 
             c1.metric(
                 "T Statistic",
@@ -75,6 +94,16 @@ else:
             c2.metric(
                 "P Value",
                 f"{p_val:.4f}"
+            )
+
+            c3.metric(
+                "Cohen's d",
+                f"{cohens_d:.4f}"
+            )
+
+            st.metric(
+                "95% Confidence Interval",
+                f"[{ci_low:.4f}, {ci_high:.4f}]"
             )
 
             st.subheader("Assumption Check")
@@ -87,11 +116,25 @@ else:
 
                 if len(data) <= 5000:
 
-                    _, normality_p = stats.shapiro(data)
+                    _, normality_p = stats.shapiro(
+                        data
+                    )
 
                     st.write(
                         f"Shapiro-Wilk p-value: {normality_p:.4f}"
                     )
+
+                    if normality_p >= 0.05:
+
+                        st.success(
+                            "Normality assumption satisfied."
+                        )
+
+                    else:
+
+                        st.warning(
+                            "Data may not be normally distributed."
+                        )
 
             st.subheader("Interpretation")
 
@@ -101,8 +144,8 @@ else:
 
                     st.success(
                         f"""
-                        The sample mean differs significantly from
-                        the hypothesized mean of {mu_0}.
+                        The sample mean differs significantly
+                        from the hypothesized mean of {mu_0}.
                         """
                     )
 
@@ -115,9 +158,39 @@ else:
                         """
                     )
 
-    # --------------------------------------------------
-    # TWO SAMPLE
-    # --------------------------------------------------
+                st.markdown(
+                    "### Effect Size"
+                )
+
+                abs_d = abs(cohens_d)
+
+                if abs_d < 0.2:
+
+                    st.info(
+                        "Negligible effect size."
+                    )
+
+                elif abs_d < 0.5:
+
+                    st.info(
+                        "Small effect size."
+                    )
+
+                elif abs_d < 0.8:
+
+                    st.info(
+                        "Medium effect size."
+                    )
+
+                else:
+
+                    st.success(
+                        "Large effect size."
+                    )
+
+    # ==================================================
+    # INDEPENDENT TWO-SAMPLE T-TEST
+    # ==================================================
 
     else:
 
@@ -182,9 +255,58 @@ else:
                     equal_var=equal_var
                 )
 
+                mean_diff = (
+                    np.mean(v1)
+                    -
+                    np.mean(v2)
+                )
+
+                n1 = len(v1)
+                n2 = len(v2)
+
+                pooled_std = np.sqrt(
+                    (
+                        ((n1 - 1) * np.var(v1, ddof=1))
+                        +
+                        ((n2 - 1) * np.var(v2, ddof=1))
+                    )
+                    /
+                    (n1 + n2 - 2)
+                )
+
+                cohens_d = (
+                    mean_diff / pooled_std
+                )
+
+                se_diff = np.sqrt(
+                    np.var(v1, ddof=1) / n1
+                    +
+                    np.var(v2, ddof=1) / n2
+                )
+
+                df_ci = n1 + n2 - 2
+
+                ci_low = (
+                    mean_diff
+                    -
+                    stats.t.ppf(
+                        0.975,
+                        df_ci
+                    ) * se_diff
+                )
+
+                ci_high = (
+                    mean_diff
+                    +
+                    stats.t.ppf(
+                        0.975,
+                        df_ci
+                    ) * se_diff
+                )
+
                 st.subheader("Results")
 
-                c1, c2 = st.columns(2)
+                c1, c2, c3 = st.columns(3)
 
                 c1.metric(
                     "T Statistic",
@@ -196,16 +318,26 @@ else:
                     f"{p_val:.4f}"
                 )
 
+                c3.metric(
+                    "Cohen's d",
+                    f"{cohens_d:.4f}"
+                )
+
+                st.metric(
+                    "95% Confidence Interval",
+                    f"[{ci_low:.4f}, {ci_high:.4f}]"
+                )
+
                 st.subheader("Assumption Check")
 
                 with st.container(border=True):
 
                     st.write(
-                        f"Group 1 Size: {len(v1)}"
+                        f"Group 1 Size: {n1}"
                     )
 
                     st.write(
-                        f"Group 2 Size: {len(v2)}"
+                        f"Group 2 Size: {n2}"
                     )
 
                     st.write(
@@ -246,4 +378,34 @@ else:
                             difference was found between
                             {group1} and {group2}.
                             """
+                        )
+
+                    st.markdown(
+                        "### Effect Size"
+                    )
+
+                    abs_d = abs(cohens_d)
+
+                    if abs_d < 0.2:
+
+                        st.info(
+                            "Negligible effect size."
+                        )
+
+                    elif abs_d < 0.5:
+
+                        st.info(
+                            "Small effect size."
+                        )
+
+                    elif abs_d < 0.8:
+
+                        st.info(
+                            "Medium effect size."
+                        )
+
+                    else:
+
+                        st.success(
+                            "Large effect size."
                         )

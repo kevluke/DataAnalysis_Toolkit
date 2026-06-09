@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+
 from ui_components import apply_premium_theme
 
 apply_premium_theme()
@@ -10,21 +11,28 @@ apply_premium_theme()
 st.title("Visualizations")
 
 st.markdown("""
-Explore the distribution and cumulative behavior of numerical variables
-through histograms, density curves, and cumulative distribution plots.
+Explore distributions using histograms, density curves,
+box plots, and cumulative distribution functions.
 """)
 
 if "df" not in st.session_state or st.session_state["df"] is None:
+
     st.error("Please upload a dataset from the Dashboard first.")
 
 else:
 
     df = st.session_state["df"]
 
-    num_cols = df.select_dtypes(include=[np.number]).columns.tolist()
+    num_cols = df.select_dtypes(
+        include=[np.number]
+    ).columns.tolist()
 
     if len(num_cols) == 0:
-        st.error("No numerical variables found in the dataset.")
+
+        st.error(
+            "No numerical variables found in the dataset."
+        )
+
         st.stop()
 
     selected_col = st.selectbox(
@@ -39,19 +47,32 @@ else:
         or np.array_equal(data, data.astype(int))
     )
 
-    tab1, tab2 = st.tabs([
+    # --------------------------------------------------
+    # TABS
+    # --------------------------------------------------
+
+    tab1, tab2, tab3 = st.tabs([
         "Distribution",
+        "Box Plot",
         "Cumulative Distribution"
     ])
 
+    # --------------------------------------------------
+    # DISTRIBUTION
+    # --------------------------------------------------
+
     with tab1:
 
-        fig, ax = plt.subplots(figsize=(9, 4))
+        fig, ax = plt.subplots(
+            figsize=(9, 4)
+        )
 
         if is_discrete:
 
             counts = (
-                data.value_counts(normalize=True)
+                data.value_counts(
+                    normalize=True
+                )
                 .sort_index()
             )
 
@@ -65,7 +86,9 @@ else:
                 f"Probability Mass Function - {selected_col}"
             )
 
-            ax.set_ylabel("Probability")
+            ax.set_ylabel(
+                "Probability"
+            )
 
         else:
 
@@ -80,17 +103,103 @@ else:
                 f"Distribution of {selected_col}"
             )
 
-            ax.set_ylabel("Density")
+            ax.set_ylabel(
+                "Density"
+            )
 
-        ax.set_xlabel(selected_col)
+        ax.set_xlabel(
+            selected_col
+        )
 
         st.pyplot(fig)
 
         plt.close(fig)
 
+    # --------------------------------------------------
+    # BOX PLOT
+    # --------------------------------------------------
+
     with tab2:
 
-        fig, ax = plt.subplots(figsize=(9, 4))
+        fig, ax = plt.subplots(
+            figsize=(9, 3)
+        )
+
+        sns.boxplot(
+            x=data,
+            ax=ax
+        )
+
+        ax.set_title(
+            f"Box Plot - {selected_col}"
+        )
+
+        st.pyplot(fig)
+
+        plt.close(fig)
+
+        q1 = data.quantile(0.25)
+
+        q3 = data.quantile(0.75)
+
+        iqr = q3 - q1
+
+        lower_bound = (
+            q1 - 1.5 * iqr
+        )
+
+        upper_bound = (
+            q3 + 1.5 * iqr
+        )
+
+        outliers = data[
+            (data < lower_bound)
+            |
+            (data > upper_bound)
+        ]
+
+        st.subheader(
+            "Outlier Summary"
+        )
+
+        c1, c2, c3 = st.columns(3)
+
+        c1.metric(
+            "Q1",
+            f"{q1:.4f}"
+        )
+
+        c2.metric(
+            "Q3",
+            f"{q3:.4f}"
+        )
+
+        c3.metric(
+            "Outliers",
+            len(outliers)
+        )
+
+        if len(outliers) > 0:
+
+            st.warning(
+                f"{len(outliers)} potential outlier(s) detected using the IQR method."
+            )
+
+        else:
+
+            st.success(
+                "No outliers detected."
+            )
+
+    # --------------------------------------------------
+    # CDF
+    # --------------------------------------------------
+
+    with tab3:
+
+        fig, ax = plt.subplots(
+            figsize=(9, 4)
+        )
 
         sns.ecdfplot(
             data,
@@ -102,7 +211,9 @@ else:
             f"Cumulative Distribution - {selected_col}"
         )
 
-        ax.set_xlabel(selected_col)
+        ax.set_xlabel(
+            selected_col
+        )
 
         ax.set_ylabel(
             "Cumulative Probability"
@@ -117,6 +228,10 @@ else:
         st.pyplot(fig)
 
         plt.close(fig)
+
+    # --------------------------------------------------
+    # INTERPRETATION
+    # --------------------------------------------------
 
     st.subheader("Interpretation")
 
@@ -135,7 +250,7 @@ else:
             )
 
         st.write(
-            "• The histogram helps identify the overall shape, spread, and concentration of values."
+            "• The box plot summarizes the median, quartiles, spread, and potential outliers."
         )
 
         st.write(
@@ -147,5 +262,5 @@ else:
         )
 
         st.write(
-            "• Long tails or isolated regions in the plots may indicate potential outliers."
+            "• Outliers should be investigated before performing hypothesis tests."
         )

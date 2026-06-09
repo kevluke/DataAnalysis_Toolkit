@@ -55,9 +55,9 @@ else:
             num_cols
         )
 
-        # --------------------------------------------------
-        # ONE WAY
-        # --------------------------------------------------
+        # ==================================================
+        # ONE-WAY ANOVA
+        # ==================================================
 
         if anova_type == "One-Way ANOVA":
 
@@ -68,12 +68,15 @@ else:
 
             if st.button("Run ANOVA"):
 
-                grouped = df.groupby(group_var)
+                clean_df = df[
+                    [dependent_var, group_var]
+                ].dropna()
+
+                grouped = clean_df.groupby(group_var)
 
                 groups = [
-                    g[dependent_var].dropna().values
+                    g[dependent_var].values
                     for _, g in grouped
-                    if len(g[dependent_var].dropna()) > 0
                 ]
 
                 if len(groups) < 2:
@@ -92,9 +95,34 @@ else:
                         *groups
                     )
 
+                    grand_mean = clean_df[
+                        dependent_var
+                    ].mean()
+
+                    ss_between = sum(
+                        len(g[dependent_var]) *
+                        (
+                            g[dependent_var].mean()
+                            - grand_mean
+                        ) ** 2
+                        for _, g in grouped
+                    )
+
+                    ss_total = sum(
+                        (
+                            clean_df[dependent_var]
+                            - grand_mean
+                        ) ** 2
+                    )
+
+                    eta_squared = (
+                        ss_between /
+                        ss_total
+                    )
+
                     st.subheader("Results")
 
-                    c1, c2 = st.columns(2)
+                    c1, c2, c3 = st.columns(3)
 
                     c1.metric(
                         "F Statistic",
@@ -104,6 +132,25 @@ else:
                     c2.metric(
                         "P Value",
                         f"{p_val:.4f}"
+                    )
+
+                    c3.metric(
+                        "Eta Squared (η²)",
+                        f"{eta_squared:.4f}"
+                    )
+
+                    st.subheader("Group Means")
+
+                    group_means = (
+                        clean_df
+                        .groupby(group_var)[dependent_var]
+                        .mean()
+                        .reset_index()
+                    )
+
+                    st.dataframe(
+                        group_means,
+                        use_container_width=True
                     )
 
                     st.subheader(
@@ -148,34 +195,6 @@ else:
                                 """
                             )
 
-                            clean_df = df[
-                                [dependent_var, group_var]
-                            ].dropna()
-
-                            tukey = pairwise_tukeyhsd(
-                                endog=clean_df[
-                                    dependent_var
-                                ],
-                                groups=clean_df[
-                                    group_var
-                                ],
-                                alpha=0.05
-                            )
-
-                            st.markdown(
-                                "### Tukey Post-Hoc Test"
-                            )
-
-                            tukey_df = pd.DataFrame(
-                                tukey._results_table.data[1:],
-                                columns=tukey._results_table.data[0]
-                            )
-
-                            st.dataframe(
-                                tukey_df,
-                                use_container_width=True
-                            )
-
                         else:
 
                             st.warning(
@@ -186,9 +205,63 @@ else:
                                 """
                             )
 
-        # --------------------------------------------------
-        # TWO WAY
-        # --------------------------------------------------
+                        st.markdown(
+                            "### Effect Size"
+                        )
+
+                        if eta_squared < 0.01:
+
+                            st.info(
+                                "Negligible effect size."
+                            )
+
+                        elif eta_squared < 0.06:
+
+                            st.info(
+                                "Small effect size."
+                            )
+
+                        elif eta_squared < 0.14:
+
+                            st.info(
+                                "Medium effect size."
+                            )
+
+                        else:
+
+                            st.success(
+                                "Large effect size."
+                            )
+
+                    if p_val < 0.05:
+
+                        st.subheader(
+                            "Tukey Post-Hoc Test"
+                        )
+
+                        tukey = pairwise_tukeyhsd(
+                            endog=clean_df[
+                                dependent_var
+                            ],
+                            groups=clean_df[
+                                group_var
+                            ],
+                            alpha=0.05
+                        )
+
+                        tukey_df = pd.DataFrame(
+                            tukey._results_table.data[1:],
+                            columns=tukey._results_table.data[0]
+                        )
+
+                        st.dataframe(
+                            tukey_df,
+                            use_container_width=True
+                        )
+
+        # ==================================================
+        # TWO-WAY ANOVA
+        # ==================================================
 
         else:
 
@@ -251,6 +324,19 @@ else:
                         typ=2
                     )
 
+                    ss_total = (
+                        anova_table["sum_sq"]
+                        .sum()
+                    )
+
+                    anova_table[
+                        "Eta Squared"
+                    ] = (
+                        anova_table["sum_sq"]
+                        /
+                        ss_total
+                    )
+
                     st.subheader(
                         "ANOVA Table"
                     )
@@ -273,14 +359,19 @@ else:
                                 "PR(>F)"
                             ]
 
+                            eta = anova_table.loc[
+                                effect,
+                                "Eta Squared"
+                            ]
+
                             if p_value < 0.05:
 
                                 st.success(
-                                    f"{effect} has a statistically significant effect (p = {p_value:.4f})."
+                                    f"{effect} is statistically significant (p = {p_value:.4f}, η² = {eta:.4f})."
                                 )
 
                             else:
 
                                 st.warning(
-                                    f"{effect} is not statistically significant (p = {p_value:.4f})."
+                                    f"{effect} is not statistically significant (p = {p_value:.4f}, η² = {eta:.4f})."
                                 )
