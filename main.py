@@ -295,7 +295,6 @@ if page_title == "Dashboard":
                 df.dtypes.astype(str)
 
         })
-
         st.dataframe(
             info_df,
             use_container_width=True
@@ -308,4 +307,4 @@ if page_title == "Dashboard":
             """
         )
 
-pg.run()
+      
