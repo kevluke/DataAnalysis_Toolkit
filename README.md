@@ -22,6 +22,18 @@ https://github.com/kevluke/DataAnalysis_Toolkit.git
 
 ---
 
+## 🌐 Live Application
+
+Access the deployed Statistics Toolkit here:
+
+## 🌐 Live Application
+
+Access the deployed Statistics Toolkit here:
+
+https://dataanalysistoolkit-kxsptxxexwbfzg5hwna57u.streamlit.app/
+
+---
+
 ## 🎯 Project Objective
 
 This project was developed as part of the **Tools and Methods of Data Analysis** course.
