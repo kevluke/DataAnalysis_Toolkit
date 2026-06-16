@@ -8,7 +8,7 @@ from ui_components import apply_premium_theme
 # --------------------------------------------------
 
 st.set_page_config(
-    page_title="StatLab Suite",
+    page_title="Statistics Analysis",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -100,11 +100,11 @@ if page_title == "Dashboard":
     st.markdown(
         """
         <h1 style="margin-bottom:0;">
-        StatLab Suite
+        Statistical Analysis Toolkit
         </h1>
 
         <p style="font-size:1rem;color:gray;">
-        Statistical Analysis Toolkit
+        Descriptive Statistics, Visualization & Hypothesis Testing
         </p>
         """,
         unsafe_allow_html=True
