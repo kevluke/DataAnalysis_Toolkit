@@ -123,7 +123,7 @@ if page_title == "Dashboard":
         st.write(
             """
             Upload a CSV or Excel dataset and explore it using
-            descriptive statistics, visualizations, normality tests,
+            descriptive statistics, visualizations, Distribution fitting, normality tests,
             hypothesis testing, and nonparametric methods.
             """
         )
