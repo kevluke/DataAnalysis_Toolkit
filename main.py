@@ -51,15 +51,16 @@ workspace_navigation = {
         st.Page(
             "pages/4_Central_Limit_Theorem.py",
             title="Central Limit Theorem"
+        ),
+
+        st.Page(
+            "pages/5_Distribution_fitting.py",
+            title="Distribution Fitting"
+
         )
     ],
 
     "HYPOTHESIS TESTING": [
-
-        st.Page(
-            "pages/5_T-test.py",
-            title="T-Test"
-        ),
 
         st.Page(
             "pages/6_Anova.py",
@@ -67,8 +68,8 @@ workspace_navigation = {
         ),
 
         st.Page(
-            "pages/7_Z-test.py",
-            title="Z-Test"
+            "pages/7_T-test.py",
+            title="T-Test"
         ),
 
         st.Page(
@@ -77,10 +78,15 @@ workspace_navigation = {
         ),
 
         st.Page(
-            "pages/9_Nonparametric.py",
+            "pages/9_Z-test.py",
+            title="Z-Test"
+        ),
+
+        st.Page(
+            "pages/10_Nonparametric.py",
             title="Nonparametric Tests"
         )
-    ]
+    ],
 }
 
 pg = st.navigation(workspace_navigation)
