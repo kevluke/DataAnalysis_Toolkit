@@ -82,6 +82,9 @@ else:
                 data,
                 mu_0
             )
+            cohens_d = (
+                sample_mean - mu_0
+            ) / sample_std
 
             st.subheader(
                 "Hypotheses"
@@ -159,12 +162,14 @@ else:
                 "Statistic": [
                     "T Statistic",
                     "Degrees of Freedom",
-                    "P Value"
+                    "P Value",
+                    "Cohen's d"
                 ],
                 "Value": [
                     round(t_stat, 4),
                     degrees_freedom,
-                    round(p_val, 4)
+                    round(p_val, 4),
+                    round(cohens_d, 4)
                 ]
             })
 
@@ -176,6 +181,38 @@ else:
             st.subheader(
                 "Decision"
             )
+            st.dataframe(
+                result_df,
+                use_container_width=True
+            )
+            st.subheader(
+                "Effect Size Interpretation"
+            )
+
+            abs_d = abs(cohens_d)
+
+            if abs_d < 0.20:
+
+                 st.info(
+                     "Negligible Effect"
+                 )
+            elif abs_d < 0.50:
+                 st.info(
+                     "Small Effect"
+                 )
+            elif abs_d < 0.80:
+                 st.info(
+                     "Medium Effect"
+                 )
+
+            else:
+                st.info(
+                    "Large Effect"
+             )
+                st.subheader(
+                    "Decision"
+                )
+            
 
             if p_val < 0.05:
 
@@ -295,6 +332,19 @@ else:
                     v2,
                     equal_var=equal_var
                 )
+                pooled_sd = np.sqrt(
+                    (
+                        ((n1 - 1) * np.var(v1, ddof=1))
+                        +
+                        ((n2 - 1) * np.var(v2, ddof=1))
+                    )
+                    
+                    /
+                    (n1 + n2 - 2)
+                )
+                cohens_d = (
+                     mean1 - mean2
+                ) / pooled_sd
 
                 degrees_freedom = (
                     n1 + n2 - 2
@@ -370,12 +420,14 @@ else:
                     "Statistic": [
                         "T Statistic",
                         "Degrees of Freedom",
-                        "P Value"
+                        "P Value",
+                        "Cohen's d"
                     ],
                     "Value": [
                         round(t_stat, 4),
                         degrees_freedom,
-                        round(p_val, 4)
+                        round(p_val, 4),
+                        round(cohens_d, 4)
                     ]
                 })
 
@@ -384,6 +436,33 @@ else:
                     use_container_width=True
                 )
 
+                st.subheader(
+                    "Decision"
+                )
+                st.subheader(
+                    "Effect Size Interpretation"
+                )
+
+            abs_d = abs(cohens_d)
+
+            if abs_d < 0.20:
+
+                 st.info(
+                     "Negligible Effect"
+                 )
+            elif abs_d < 0.50:
+                 st.info(
+                     "Small Effect"
+                 )
+            elif abs_d < 0.80:
+                 st.info(
+                     "Medium Effect"
+                 )
+
+            else:
+                st.info(
+                    "Large Effect"
+             )
                 st.subheader(
                     "Decision"
                 )
@@ -472,7 +551,10 @@ else:
                 v1,
                 v2
             )
-
+            cohens_d = (
+                mean_difference
+            ) / std_difference
+            
             st.subheader(
                 "Hypotheses"
             )
@@ -518,6 +600,7 @@ else:
                     "Sample Size",
                     "Mean Difference",
                     "Standard Deviation of Differences"
+
                 ],
                 "Value": [
                     sample_size,
@@ -539,12 +622,14 @@ else:
                 "Statistic": [
                     "T Statistic",
                     "Degrees of Freedom",
-                    "P Value"
+                    "P Value",
+                    "Cohen's d"
                 ],
                 "Value": [
                     round(t_stat, 4),
                     degrees_freedom,
-                    round(p_val, 4)
+                    round(p_val, 4),
+                    round(cohens_d, 4)
                 ]
             })
 
@@ -556,6 +641,33 @@ else:
             st.subheader(
                 "Decision"
             )
+            st.subheader(
+                "Effect Size Interpretation"
+            )
+
+            abs_d = abs(cohens_d)
+
+            if abs_d < 0.20:
+
+                 st.info(
+                     "Negligible Effect"
+                 )
+            elif abs_d < 0.50:
+                 st.info(
+                     "Small Effect"
+                 )
+            elif abs_d < 0.80:
+                 st.info(
+                     "Medium Effect"
+                 )
+
+            else:
+                st.info(
+                    "Large Effect"
+             )
+                st.subheader(
+                    "Decision"
+                )
 
             if p_val < 0.05:
 
