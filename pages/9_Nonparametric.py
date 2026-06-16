@@ -245,6 +245,16 @@ elif test_type == "Wilcoxon Signed-Rank Test":
             clean_df[col2]
         )
 
+        z_score = stats.norm.ppf(
+            p_val / 2
+        )
+
+        effect_size_r = abs(
+            z_score
+        ) / np.sqrt(
+            len(clean_df)
+        )
+
         differences = (
             clean_df[col1]
             -
@@ -300,14 +310,16 @@ elif test_type == "Wilcoxon Signed-Rank Test":
             "Statistic": [
 
                 "W Statistic",
-                "P Value"
+                "P Value",
+                "Effect Size (r)"
 
             ],
 
             "Value": [
 
                 round(stat, 4),
-                round(p_val, 4)
+                round(p_val, 4),
+                round(effect_size_r, 4)
 
             ]
 
@@ -385,6 +397,16 @@ elif test_type == "Kruskal-Wallis Test":
             *groups
         )
 
+        n = len(clean_df)
+
+        k = len(groups)
+
+        epsilon_squared = (
+            h_stat - k + 1
+        ) / (
+            n - k
+        )
+
         st.subheader("Hypotheses")
 
         with st.container(border=True):
@@ -423,14 +445,16 @@ elif test_type == "Kruskal-Wallis Test":
             "Statistic": [
 
                 "H Statistic",
-                "P Value"
+                "P Value",
+                "Epsilon Squared"
 
             ],
 
             "Value": [
 
                 round(h_stat, 4),
-                round(p_val, 4)
+                round(p_val, 4),
+                round(epsilon_squared, 4)
 
             ]
 
@@ -499,6 +523,16 @@ else:
             *arrays
         )
 
+        n = len(clean_df)
+
+        k = len(selected_cols)
+
+        kendalls_w = (
+            stat
+        ) / (
+            n * (k - 1)
+        )
+
         st.subheader("Hypotheses")
 
         with st.container(border=True):
@@ -545,14 +579,16 @@ else:
             "Statistic": [
 
                 "Friedman Statistic",
-                "P Value"
+                "P Value",
+                "Kendall's W"
 
             ],
 
             "Value": [
 
                 round(stat, 4),
-                round(p_val, 4)
+                round(p_val, 4),
+                round(kendalls_w, 4)
 
             ]
 
