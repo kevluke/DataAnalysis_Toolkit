@@ -168,12 +168,44 @@ The toolkit generates:
 This module helps users visualize one of the most important concepts in statistics.
 
 ---
+## 6. 📉 Distribution Fitting
+
+The Distribution Fitting module helps users identify which probability distribution best represents a selected numerical variable.
+
+### Supported Distributions
+
+* Normal Distribution
+* Exponential Distribution
+* Uniform Distribution
+
+### Features
+
+The module automatically:
+
+* Estimates distribution parameters
+* Fits multiple probability distributions to the data
+* Visualizes fitted probability density functions
+* Compares goodness-of-fit using the Kolmogorov-Smirnov (KS) test
+* Identifies the best-fitting distribution
+
+### Outputs
+
+* Histogram of observed data
+* Fitted distribution curves
+* KS Statistic
+* KS p-value
+* Distribution parameter estimates
+* Best-fit recommendation
+
+This module helps users understand the underlying probability distribution of their data and provides a foundation for statistical modeling and inference.
+
+---
 
 # 📊 Hypothesis Testing
 
 ---
 
-## 6. 🧪 T-Tests
+## 7. 🧪 T-Tests
 
 The toolkit includes three commonly used t-tests.
 
@@ -206,7 +238,7 @@ Cohen's d measures practical significance and complements hypothesis testing res
 
 ---
 
-## 7. 📈 Z-Test
+## 8. 📈 Z-Test
 
 The toolkit includes:
 
@@ -223,7 +255,7 @@ Used when population standard deviation is known or sample size is sufficiently 
 
 ---
 
-## 8. 📊 ANOVA
+## 9. 📊 ANOVA
 
 The toolkit includes both One-Way and Two-Way Analysis of Variance.
 
@@ -254,7 +286,7 @@ This provides both statistical significance and practical significance measures.
 
 ---
 
-## 9. 🔢 Chi-Square Tests
+## 10. 🔢 Chi-Square Tests
 
 The toolkit includes two common chi-square procedures.
 
@@ -281,7 +313,7 @@ Cramer's V measures the strength of association between categorical variables.
 
 ---
 
-## 10. 🔁 Nonparametric Tests
+## 11. 🔁 Nonparametric Tests
 
 The toolkit includes nonparametric alternatives for situations where parametric assumptions are violated.
 
@@ -349,19 +381,20 @@ Statistics_Toolkit/
 ├── main.py
 ├── ui_components.py
 ├── requirements.txt
+├── README.md
+├── .gitignore
 │
-├── pages/
-│   ├── 1_Descriptive.py
-│   ├── 2_Visualization.py
-│   ├── 3_Normality-Test.py
-│   ├── 4_Central_Limit_Theorem.py
-│   ├── 5_T-test.py
-│   ├── 6_Anova.py
-│   ├── 7_Z-test.py
-│   ├── 8_Chi square -test.py
-│   └── 9_Nonparametric.py
-│
-└── README.md
+└── pages/
+    ├── 1_Descriptive.py
+    ├── 2_Visualization.py
+    ├── 3_Normality-Test.py
+    ├── 4_Central_Limit_Theorem.py
+    ├── 5_Distribution_fitting.py
+    ├── 6_Anova.py
+    ├── 7_T-test.py
+    ├── 8_Chi square -test.py
+    ├── 9_Z-test.py
+    └── 10_Nonparametric.py
 ```
 
 ---
