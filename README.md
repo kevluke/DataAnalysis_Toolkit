@@ -26,10 +26,6 @@ https://github.com/kevluke/DataAnalysis_Toolkit.git
 
 Access the deployed Statistics Toolkit here:
 
-## 🌐 Live Application
-
-Access the deployed Statistics Toolkit here:
-
 https://dataanalysistoolkit-kxsptxxexwbfzg5hwna57u.streamlit.app/
 
 ---
