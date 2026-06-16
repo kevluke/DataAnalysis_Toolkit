@@ -541,7 +541,6 @@ Example:
 
 Potential future enhancements include:
 
-- Distribution Fitting Module
 - PDF Report Generation
 - Statistical Recommendation Engine
 - Correlation Analysis
