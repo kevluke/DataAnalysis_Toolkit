@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import scipy.stats as stats
 import statsmodels.api as sm
+import pingouin as pg
 
 from itertools import combinations
 from statsmodels.formula.api import ols
@@ -172,6 +173,30 @@ else:
                     f_stat, p_val = stats.f_oneway(
                         *groups
                     )
+                    ss_between = sum(
+                        len(g) *
+                        (
+                            np.mean(g)
+                            -
+                            np.mean(clean_df[dependent_var])
+                        ) ** 2
+                        for g in groups
+                    )
+
+                    ss_total = sum(
+                        (
+                            clean_df[dependent_var]
+                            -
+                            np.mean(
+                                clean_df[dependent_var]
+                            )
+                        ) ** 2
+                    )
+
+                    eta_squared = (
+                        ss_between /
+                        ss_total
+                    )
 
                     df_between = (
                         len(groups) - 1
@@ -188,22 +213,25 @@ else:
                     )
 
                     anova_df = pd.DataFrame({
+                     "Statistic": [
 
-                        "Statistic": [
+                         "F Statistic",
+                         "P Value",
+                         "DF Between",
+                         "DF Within",
+                         "Eta Squared"
 
-                            "F Statistic",
-                            "P Value",
-                            "DF Between",
-                            "DF Within"
+                    ],
 
-                        ],
+                       
 
                         "Value": [
 
                             round(f_stat, 4),
                             round(p_val, 4),
                             df_between,
-                            df_within
+                            df_within,
+                            round(eta_squared, 4)
 
                         ]
 
@@ -213,6 +241,34 @@ else:
                         anova_df,
                         use_container_width=True
                     )
+
+                    st.subheader(
+                        "Effect Size Interpretation"
+                    )
+
+                    if eta_squared < 0.01:
+
+                        st.info(
+                            "Negligible Effect"
+                        )
+
+                    elif eta_squared < 0.06:
+
+                        st.info(
+                            "Small Effect"
+                        )
+
+                    elif eta_squared < 0.14:
+
+                        st.info(
+                            "Medium Effect"
+                        )
+
+                    else:
+
+                        st.info(
+                            "Large Effect"
+                        )
 
                     # ==========================================
                     # DECISION
@@ -367,6 +423,33 @@ else:
                             bonf_df,
                             use_container_width=True
                         )
+                        # ==========================================
+                        # GAMES-HOWELL POST-HOC
+                        # ==========================================
+
+                        if levene_p < 0.05:
+
+                            st.subheader(
+                                "Games-Howell Post-Hoc"
+                            )
+
+                            st.info(
+                                """
+                                Levene's test indicates unequal variances.
+                                Games-Howell is recommended in this situation.
+                                """
+                            )
+
+                            gh_df = pg.pairwise_gameshowell(
+                                data=clean_df,
+                                dv=dependent_var,
+                                between=group_var
+                            )
+
+                            st.dataframe(
+                                gh_df,
+                                use_container_width=True
+                            )
 
         # ==================================================
         # TWO-WAY ANOVA
