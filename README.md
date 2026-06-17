@@ -14,7 +14,7 @@
 
 ---
 
-## 🌐 Project Repository
+##  Project Repository
 
 GitHub Repository:
 
@@ -22,7 +22,7 @@ https://github.com/kevluke/DataAnalysis_Toolkit.git
 
 ---
 
-## 🌐 Live Application
+##  Live Application
 
 Access the deployed Statistics Toolkit here:
 
@@ -30,7 +30,7 @@ https://dataanalysistoolkit-kxsptxxexwbfzg5hwna57u.streamlit.app/
 
 ---
 
-## 🎯 Project Objective
+##  Project Objective
 
 This project was developed as part of the **Tools and Methods of Data Analysis** course.
 
@@ -52,11 +52,11 @@ The toolkit combines statistical rigor with ease of use, making it suitable for 
 
 ---
 
-# ✨ Key Features
+#  Key Features
 
 ---
 
-## 1. 📁 Dataset Upload and Management
+## 1.  Dataset Upload and Management
 
 Users can upload datasets directly into the application.
 
@@ -82,7 +82,7 @@ This provides an immediate understanding of dataset structure and quality before
 
 ---
 
-## 2. 📊 Descriptive Statistics
+## 2.  Descriptive Statistics
 
 The Descriptive Statistics module provides a detailed statistical summary of selected numerical variables.
 
@@ -111,7 +111,7 @@ This helps users understand central tendency, variability, and distribution shap
 
 ---
 
-## 3. 📈 Data Visualization
+## 3.  Data Visualization
 
 The Visualization module provides graphical representations of data distributions.
 
@@ -132,7 +132,7 @@ These plots assist users in identifying:
 
 ---
 
-## 4. 🧪 Normality Testing
+## 4.  Normality Testing
 
 The Normality Testing module evaluates whether data follows a normal distribution.
 
@@ -153,7 +153,7 @@ Normality testing helps users determine whether parametric or nonparametric meth
 
 ---
 
-## 5. 📚 Central Limit Theorem Simulation
+## 5.  Central Limit Theorem Simulation
 
 The Central Limit Theorem (CLT) module demonstrates how sample means become normally distributed as sample size increases.
 
@@ -176,7 +176,7 @@ The toolkit generates:
 This module helps users visualize one of the most important concepts in statistics.
 
 ---
-## 6. 📉 Distribution Fitting
+## 6.  Distribution Fitting
 
 The Distribution Fitting module helps users identify which probability distribution best represents a selected numerical variable.
 
@@ -209,11 +209,11 @@ This module helps users understand the underlying probability distribution of th
 
 ---
 
-# 📊 Hypothesis Testing
+#  Hypothesis Testing
 
 ---
 
-## 7. 🧪 T-Tests
+## 7.  T-Tests
 
 The toolkit includes three commonly used t-tests.
 
@@ -246,7 +246,7 @@ Cohen's d measures practical significance and complements hypothesis testing res
 
 ---
 
-## 8. 📈 Z-Test
+## 8.  Z-Test
 
 The toolkit includes:
 
@@ -263,7 +263,7 @@ Used when population standard deviation is known or sample size is sufficiently 
 
 ---
 
-## 9. 📊 ANOVA
+## 9.  ANOVA
 
 The toolkit includes both One-Way and Two-Way Analysis of Variance.
 
@@ -294,7 +294,7 @@ This provides both statistical significance and practical significance measures.
 
 ---
 
-## 10. 🔢 Chi-Square Tests
+## 10.  Chi-Square Tests
 
 The toolkit includes two common chi-square procedures.
 
@@ -321,7 +321,7 @@ Cramer's V measures the strength of association between categorical variables.
 
 ---
 
-## 11. 🔁 Nonparametric Tests
+## 11.  Nonparametric Tests
 
 The toolkit includes nonparametric alternatives for situations where parametric assumptions are violated.
 
@@ -363,7 +363,7 @@ Used for repeated measures analysis.
 
 ---
 
-# 📏 Effect Size Measures Included
+#  Effect Size Measures Included
 
 The toolkit includes several effect size measures often omitted from student projects.
 
@@ -381,7 +381,7 @@ These measures help users assess practical significance in addition to statistic
 
 ---
 
-# 🧱 Project Structure
+#  Project Structure
 
 ```text
 Statistics_Toolkit/
@@ -407,7 +407,7 @@ Statistics_Toolkit/
 
 ---
 
-# ⚙️ Installation
+#  Installation
 
 ## Step 1: Clone the Repository
 
@@ -446,7 +446,7 @@ streamlit run main.py
 
 ---
 
-# 🧭 How to Use the Toolkit
+#  How to Use the Toolkit
 
 ### Step 1
 
@@ -478,32 +478,7 @@ Interpret significance and effect sizes.
 
 ---
 
-# 🖼️ Recommended Screenshots
-
-Create a screenshots folder:
-
-```text
-screenshots/
-├── 01_dashboard.png
-├── 02_descriptive_statistics.png
-├── 03_visualizations.png
-├── 04_normality_testing.png
-├── 05_t_test.png
-├── 06_anova.png
-├── 07_chi_square.png
-├── 08_nonparametric.png
-```
-
-Example:
-
-```markdown
-![Dashboard](screenshots/01_dashboard.png)
-![ANOVA Analysis](screenshots/06_anova.png)
-```
-
----
-
-# 📦 Technologies Used
+#  Technologies Used
 
 | Technology | Purpose |
 |------------|---------|
@@ -518,7 +493,7 @@ Example:
 
 ---
 
-# ✅ Assignment Requirement Coverage
+#  Assignment Requirement Coverage
 
 | Requirement | Implementation |
 |------------|---------------|
@@ -537,7 +512,7 @@ Example:
 
 ---
 
-# 🚀 Future Improvements
+#  Future Improvements
 
 Potential future enhancements include:
 
@@ -551,7 +526,7 @@ Potential future enhancements include:
 
 ---
 
-# 👨‍💻 Author
+#  Author
 
 **Kevin Luke**
 
@@ -560,7 +535,7 @@ SRH University Leipzig
 
 ---
 
-# 📌 Final Note
+#  Final Note
 
 Statistics Toolkit was developed to provide a practical and educational environment for statistical analysis.
 
